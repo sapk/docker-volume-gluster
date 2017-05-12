@@ -82,7 +82,7 @@ func (d *GlusterDriver) Create(r volume.Request) volume.Response {
 	}
 	d.volumes[r.Name] = v
 	log.Debugf("Volume Created: %v", v)
-	if err = d.saveConfig(); err != nil {
+	if err := d.saveConfig(); err != nil {
 		return volume.Response{Err: err.Error()}
 	}
 	return volume.Response{}
