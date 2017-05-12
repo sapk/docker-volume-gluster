@@ -1,0 +1,37 @@
+{
+    "description": "GlusterFS plugin for Docker",
+    "documentation": "https://docs.docker.com/engine/extend/plugins/",
+    "entrypoint": [
+        "/usr/bin/docker-volume-gluster",
+        "daemon"
+    ],
+    "env": [
+        {
+            "name": "DEBUG",
+            "settable": [
+                "value"
+            ],
+            "value": "0"
+        }
+    ],
+    "interface": {
+        "socket": "gluster.sock",
+        "types": [
+            "docker.volumedriver/1.0"
+        ]
+    },
+    "linux": {
+        "capabilities": [
+            "CAP_SYS_ADMIN"
+        ],
+        "devices": [
+            {
+                "path": "/dev/fuse"
+            }
+        ]
+    },
+    "network": {
+        "type": "host"
+    },
+    "propagatedmount": "/var/lib/docker-volumes/gluster"
+}
