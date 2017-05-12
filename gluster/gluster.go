@@ -6,7 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
-	"github.com/sapk/docker-volume-gluster/docker-volume-gluster/gluster/driver"
+	"github.com/sapk/docker-volume-gluster/gluster/driver"
 	"github.com/spf13/cobra"
 )
 
