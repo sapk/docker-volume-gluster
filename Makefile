@@ -133,8 +133,8 @@ format:
 
 test: deps format
 	@echo -e "$(OK_COLOR)==> Running tests...$(NO_COLOR)"
-	go vet ./... || true
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./driver
+	go vet ./gluster/... || true
+	go test -v -race -coverprofile=coverage.out -covermode=atomic ./gluster/driver
 	go tool cover -html=coverage.out -o coverage.html
 
 docs:
