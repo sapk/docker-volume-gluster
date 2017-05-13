@@ -2,7 +2,7 @@ package driver
 
 import (
 	"fmt"
-	"net/url"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -77,15 +77,27 @@ func (d *GlusterDriver) Create(r volume.Request) volume.Response {
 
 	v := &glusterVolume{
 		VolumeURI:   r.Options["voluri"],
-		Mountpoint:  filepath.Join(d.root, url.PathEscape(r.Options["voluri"])),
+		Mountpoint:  filepath.Join(d.root, r.Name),
 		connections: 0,
 	}
-	d.volumes[r.Name] = v
-	log.Debugf("Volume Created: %v", v)
-	if err := d.saveConfig(); err != nil {
+
+	_, err := os.Lstat(v.Mountpoint) //Create folder if not exist. This will also failed if allready exist
+	if os.IsNotExist(err) {
+		if err = os.MkdirAll(v.Mountpoint, 0700); err != nil {
+			return volume.Response{Err: err.Error()}
+		}
+
+		d.volumes[r.Name] = v
+		log.Debugf("Volume Created: %v", v)
+		if err = d.saveConfig(); err != nil {
+			return volume.Response{Err: err.Error()}
+		}
+		return volume.Response{}
+	} else if err != nil {
 		return volume.Response{Err: err.Error()}
 	}
-	return volume.Response{}
+
+	return volume.Response{Err: fmt.Sprintf("%v already exist !", v.Mountpoint)}
 }
 
 //Remove remove the requested volume
@@ -100,6 +112,9 @@ func (d *GlusterDriver) Remove(r volume.Request) volume.Response {
 	}
 	if v.connections == 0 {
 		delete(d.volumes, r.Name)
+		if err := os.Remove(v.Mountpoint); err != nil {
+			return volume.Response{Err: err.Error()}
+		}
 		return volume.Response{}
 	}
 	if err := d.saveConfig(); err != nil {
