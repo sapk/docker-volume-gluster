@@ -43,7 +43,7 @@ docker-plugin: docker-rootfs docker-plugin-create
 
 docker-image:
 	@echo -e "$(OK_COLOR)==> Docker build image : ${PLUGIN_IMAGE} $(NO_COLOR)"
-	@docker build -q -t ${PLUGIN_IMAGE} support/docker
+	docker build -t ${PLUGIN_IMAGE} -f support/docker/Dockerfile .
 
 docker-rootfs: docker-image
 	@echo -e "$(OK_COLOR)==> create rootfs directory in ./plugin/rootfs$(NO_COLOR)"
@@ -59,15 +59,15 @@ docker-plugin-create:
 	@echo -e "$(OK_COLOR)==> Remove existing plugin : ${PLUGIN_IMAGE} if exists$(NO_COLOR)"
 	@docker plugin rm -f ${PLUGIN_IMAGE} || true
 	@echo -e "$(OK_COLOR)==> Create new plugin : ${PLUGIN_IMAGE} from ./plugin$(NO_COLOR)"
-	@docker plugin create ${PLUGIN_IMAGE} ./plugin
+	docker plugin create ${PLUGIN_IMAGE} ./plugin
 
 docker-plugin-push:
 	@echo -e "$(OK_COLOR)==> push plugin : ${PLUGIN_IMAGE}$(NO_COLOR)"
-	@docker plugin push ${PLUGIN_IMAGE}
+	docker plugin push ${PLUGIN_IMAGE}
 
 docker-plugin-enable:
 	@echo -e "$(OK_COLOR)==> Enable plugin ${PLUGIN_IMAGE}$(NO_COLOR)"
-	@docker plugin enable ${PLUGIN_IMAGE}
+	docker plugin enable ${PLUGIN_IMAGE}
 
 set-build:
 	@if [ ! -d $(PWD)/.gopath/src/$(APP_USERREPO) ]; then mkdir -p $(PWD)/.gopath/src/$(APP_USERREPO); fi
