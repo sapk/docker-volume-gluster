@@ -5,39 +5,33 @@ services:
 addons:
   apt:
     packages:
-      - upx-ucl
+    - upx-ucl
 go:
   - 1.7
   - 1.8
   - tip
-
 before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
-
 install:
   - make dev-deps
-
 script:
   - make lint
   - make build
   - make test
   - ./docker-volume-gluster
-
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-
 before_deploy:
   - make compress
   - docker --version
   - make docker-plugin
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; fi
   - make docker-plugin-push
-
 deploy:
   provider: releases
   api_key:
-    secure: Mn5jPnIosAJeRD6WDbQBkwIlI7zShQd7bxrs0t0/dVxTTI/vOjAQ/n2UtMWBEc/zvc7s1mmdbtTW2UlcI8r+LFig/gp/Fsd9Cyfap45hOtG0660ockIwMJEBSJemnT5Z4UuY4tGlMtM9CH7K316VtAdHNVBka4+wnTPoNhv6SQMYjffajhRRLlNgrDFkjdJ8A/E5GfCfov0bX++GqjS6QKVTBnUwLfSIt48xXOJIgfpgLZPos3NaiBG/vGjsLlrhDb8YPnbe/ITO/1ZymBbY4sEn2WAeflXG5wGYUGnPCE3ix2VwC6PnfWEqJDW7ZzpHnAUBu+V/f/S+b3r2O50vLcPuQR8zxxs//ei/RRoIRvMiTycFZ9uFTOC/VLja8dpvl40ZYknU5NINfRZdwG1CkCORMPNOgUW5+bYrh6HygteE9z77mYQZYlgrQ07os0IIq1cnkWtVOFDCJOL1SnHUxfquPCsaC+0u33w/r+iqfNn3gPA7q94xtY2lUSLFizvSeKcyPwsHuhskomR++pRcn9djZskDTByyeeIptpBc3kqZfqpvRAM7HiIgvCbncFPLEx+IKjCJf3zOlx1cES4qUmWZH4T5k+G0soIWD2mJB4xY5RKQfJC1OnrkIxzIv1HhQD/0UjDA+Vhpq6mB2grdvEAAWdCN+1C0hbpgJIxO1k8=
+    secure: SAD6luuJhgzS7ZavymCxLaTlCbxp9VQax0uf4ozWByt0uwsLKtDM4Je4c9z9bx40PmEBKOpSoso4umL4AcY1yrQ2UTMJD+GxedmqDnge2ibfhHZMTxeDkLF3JLsACfQmibNzN/+b9nNdgyzQYnB4+OvKOmEvtHWwNP7qOuU+9QTNK/rNt5MBXk29aJFL1/t3oIvCfHl1D96pssE6uVURcXiPGkgNcSLBUewYwPwqjGqgG/xu/lgQEwpW6AE4OfwJLpdGMR/V1DUNMNs47Gt7Vh+PBRm/M7cZUYyc+CRuXuSM+PKr9xlH8mFHu6IrcM4n5Sy94A7ldB5dfn9HA+WLXEOhSej3NB06sFkjITnKSWCVCGVzzXuH5CMiwBDRKmhFLunFe9Wcz52W2wIumesaNuZOm9LbiBV47UicggeiZkhar1tvjQoFgw6R57+Wxdhdon7fwVO3euRSH7fm0RyEN1PgO92U5/gHgOO+Khlsl3GPqWNgyqeh0Ej4Ke9mFB0VjO+a8uNAQlrp+v94kQSWqpXUD30/fnZhu+sBURJ1pikH/WAhcnKEvYk7Kq5/kSuYqO0dxxEDrHh00Gwo/uHhhnOp3BNe/v1/TseSS4FOxaLrbTKCDRU+B38bsi8FoZ7J68xK9dT19TF+6ZXqka1LNIyV4ITCjkRenHMfCWWrF78=
   file: "./docker-volume-gluster"
   skip_cleanup: true
   on:
