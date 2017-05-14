@@ -5,7 +5,7 @@
 
 Use GlusterFS as a backend for docker volume
 
-Status : **proof of concept (not working)**
+Status : **proof of concept (working)**
 
 
 By using [GVfs](https://wiki.gnome.org/Projects/gvfs) this plugins allow the use of various backend as storage.
