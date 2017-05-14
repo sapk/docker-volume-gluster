@@ -2,3 +2,6 @@
 !.git*
 plugin/
 support/
+
+/docker-volume-gluster
+/docker-volume-gluster-*

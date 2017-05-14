@@ -28,5 +28,4 @@ _testmain.go
 /coverage.*
 /build
 /.gopath
-
 /plugin
