@@ -53,6 +53,16 @@ docker run -v test:/mnt --rm -ti ubuntu
 ```
 
 
+
+## Docker-compose
+```
+volumes:
+  some_vol:
+    driver: sapk/plugin-gluster
+    driver_opts:
+      voluri: "<volumeserver>:<volumeid/volumeport>"
+```
+
 ## Inspired from :
  - https://github.com/ContainX/docker-volume-netshare/
  - https://github.com/vieux/docker-volume-sshfs/
