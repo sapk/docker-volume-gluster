@@ -3,7 +3,7 @@ MAINTAINER Antoine GIRARD <antoine.girard@sapk.fr>
 
 ENV GOPATH="/usr/share/docker-volume-gluster"
 
-RUN apt-get install -y
+RUN apt-get install -y \
           golang glusterfs-client  \
  && git clone https://github.com/sapk/docker-volume-gluster.git $GOPATH \
  && cd $GOPATH && make \
