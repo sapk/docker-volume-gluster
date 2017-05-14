@@ -1,7 +1,7 @@
 #Inspired from : https://github.com/littlemanco/boilr-makefile/blob/master/template/Makefile, https://github.com/geetarista/go-boilerplate/blob/master/Makefile, https://github.com/nascii/go-boilerplate/blob/master/GNUmakefile https://github.com/cloudflare/hellogopher/blob/master/Makefile
 #PATH=$(PATH:):$(GOPATH)/bin
 APP_NAME=docker-volume-gluster
-APP_VERSION=$(shell git describe --abbrev=0)
+APP_VERSION=$(shell git describe --tags --abbrev=0)
 APP_USERREPO=github.com/sapk
 APP_PACKAGE=$(APP_USERREPO)/$(APP_NAME)
 
@@ -20,7 +20,7 @@ ARCHIVE=$(APP_NAME)-$(APP_VERSION)-$(GIT_HASH).tar.gz
 #DEPS = $(go list -f '{{range .TestImports}}{{.}} {{end}}' ./...)
 LDFLAGS = \
   -s -w \
-  -X main.Version=$(APP_VERSION}) -X main.Branch=$(GIT_BRANCH) -X main.Commit=$(GIT_HASH) -X main.BuildTime=$(DATE)
+  -X main.Version=$(APP_VERSION) -X main.Branch=$(GIT_BRANCH) -X main.Commit=$(GIT_HASH) -X main.BuildTime=$(DATE)
 
 FAKE_GOPATH = $(PWD)/.gopath
 FAKE_PACKAGE = $(FAKE_GOPATH)/src/$(APP_PACKAGE)
