@@ -3,6 +3,7 @@ package driver
 import (
 	"fmt"
 	"os"
+	"io"
 	"path/filepath"
 	"sync"
 
