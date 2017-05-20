@@ -86,18 +86,39 @@ func (d *GlusterDriver) Create(r volume.Request) volume.Response {
 		if err = os.MkdirAll(v.Mountpoint, 0700); err != nil {
 			return volume.Response{Err: err.Error()}
 		}
-
+	} else if err != nil {
+		return volume.Response{Err: err.Error()}
+	}
+	
+	isempty, err := isEmpty(v.Mountpoint)
+	if err != nil {
+		return volume.Response{Err: err.Error()}
+	}
+	if isempty {
 		d.volumes[r.Name] = v
 		log.Debugf("Volume Created: %v", v)
 		if err = d.saveConfig(); err != nil {
 			return volume.Response{Err: err.Error()}
 		}
 		return volume.Response{}
-	} else if err != nil {
-		return volume.Response{Err: err.Error()}
 	}
+	
+	return volume.Response{Err: fmt.Sprintf("%v already exist and is not empty !", v.Mountpoint)}
+}
 
-	return volume.Response{Err: fmt.Sprintf("%v already exist !", v.Mountpoint)}
+//based on: http://stackoverflow.com/questions/30697324/how-to-check-if-directory-on-path-is-empty
+func isEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+	
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err // Either not empty or error, suits both cases
 }
 
 //Remove remove the requested volume
