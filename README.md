@@ -38,14 +38,14 @@ Global Flags:
 
 ## Create and Mount volume
 ```
-docker volume create --driver gluster --opt voluri="<volumeserver>:<volumeid/volumeport>" --name test
+docker volume create --driver gluster --opt voluri="<volumeserver>:<volumename>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
 ```
 
 ## Docker plugin (New)
 ```
 docker plugin install sapk/plugin-gluster
-docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumeid/volumeport>" --name test
+docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
 ```
 
@@ -57,7 +57,7 @@ volumes:
   some_vol:
     driver: sapk/plugin-gluster
     driver_opts:
-      voluri: "<volumeserver>:<volumeid/volumeport>"
+      voluri: "<volumeserver>:<volumename>"
 ```
 
 ## Inspired from :
