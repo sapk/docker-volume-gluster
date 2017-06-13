@@ -82,7 +82,7 @@ func (d *GlusterDriver) Create(r volume.Request) volume.Response {
 		connections: 0,
 	}
 
-	_, err := os.Lstat(v.Mountpoint) //Create folder if not exist. This will also failed if allready exist
+	_, err := os.Lstat(v.Mountpoint) //Create folder if not exist. This will also failed if already exist
 	if os.IsNotExist(err) {
 		if err = os.MkdirAll(v.Mountpoint, 0700); err != nil {
 			return volume.Response{Err: err.Error()}
