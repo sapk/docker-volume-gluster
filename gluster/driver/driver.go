@@ -202,6 +202,9 @@ func (d *GlusterDriver) Mount(r volume.MountRequest) volume.Response {
 
 	if v.connections > 0 {
 		v.connections++
+		if err := d.saveConfig(); err != nil {
+			return volume.Response{Err: err.Error()}
+		}
 		return volume.Response{Mountpoint: v.Mountpoint}
 	}
 
@@ -209,7 +212,8 @@ func (d *GlusterDriver) Mount(r volume.MountRequest) volume.Response {
 	if err := d.runCmd(cmd); err != nil {
 		return volume.Response{Err: err.Error()}
 	}
-
+	
+	v.connections++
 	if err := d.saveConfig(); err != nil {
 		return volume.Response{Err: err.Error()}
 	}
