@@ -7,9 +7,6 @@ Use GlusterFS as a backend for docker volume
 
 Status : **proof of concept (working)**
 
-
-By using [GVfs](https://wiki.gnome.org/Projects/gvfs) this plugins allow the use of various backend as storage.
-
 Dedends on GlusterFS (so fuse indirectly)
 
 ## Build
@@ -32,7 +29,7 @@ Usage:
   docker-volume-gluster daemon [flags]
 
 Flags:
-  -o, --fuse-opts string   Fuse options to use for gvfs moint point (default "big_writes,allow_other,auto_cache")
+  -o, --fuse-opts string   Fuse options to use moint point (default "big_writes,allow_other,auto_cache")
 
 Global Flags:
   -b, --basedir string   Mounted volume base directory (default "/var/lib/docker-volumes/gluster")
@@ -41,17 +38,27 @@ Global Flags:
 
 ## Create and Mount volume
 ```
-docker volume create --driver gluster --opt voluri="<volumeserver>:<volumeid/volumeport>" --name test
+docker volume create --driver gluster --opt voluri="<volumeserver>:<volumename>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
 ```
 
 ## Docker plugin (New)
 ```
 docker plugin install sapk/plugin-gluster
-docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumeid/volumeport>" --name test
+docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
 ```
 
+
+
+## Docker-compose
+```
+volumes:
+  some_vol:
+    driver: sapk/plugin-gluster
+    driver_opts:
+      voluri: "<volumeserver>:<volumename>"
+```
 
 ## Inspired from :
  - https://github.com/ContainX/docker-volume-netshare/
