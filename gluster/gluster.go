@@ -13,8 +13,10 @@ import (
 const (
 	//VerboseFlag flag to set more verbose level
 	VerboseFlag = "verbose"
-	//FuseFlag flag to set Fuse moint point options
+	//FuseFlag flag to set Fuse mount point options
 	FuseFlag = "fuse-opts"
+	//MountUniqNameFlag flag to set mount point based on definition and not name of volume to not have multile mount of same distant volume
+	MountUniqNameFlag = "mount-uniq"
 	//BasedirFlag flag to set the basedir of mounted volumes
 	BasedirFlag = "basedir"
 	longHelp    = `
@@ -34,10 +36,11 @@ var (
 	//BuildTime build time of running code
 	BuildTime string
 	//PluginAlias plugin alias name in docker
-	PluginAlias = "gluster"
-	baseDir     = ""
-	fuseOpts    = ""
-	rootCmd     = &cobra.Command{
+	PluginAlias   = "gluster"
+	baseDir       = ""
+	fuseOpts      = ""
+	mountUniqName = false
+	rootCmd       = &cobra.Command{
 		Use:              "docker-volume-gluster",
 		Short:            "GlusterFS - Docker volume driver plugin",
 		Long:             longHelp,
@@ -68,7 +71,7 @@ func Start() {
 }
 
 func daemonStart(cmd *cobra.Command, args []string) {
-	d := driver.Init(baseDir, fuseOpts)
+	d := driver.Init(baseDir, fuseOpts, mountUniqName)
 	log.Debug(d)
 	h := volume.NewHandler(d)
 	log.Debug(h)
@@ -83,6 +86,7 @@ func setupFlags() {
 	rootCmd.PersistentFlags().StringVarP(&baseDir, BasedirFlag, "b", filepath.Join(volume.DefaultDockerRootDirectory, PluginAlias), "Mounted volume base directory")
 
 	daemonCmd.Flags().StringVarP(&fuseOpts, FuseFlag, "o", "", "Fuse options to use for gluster mount point") //Other ex  big_writes,use_ino,allow_other,auto_cache,umask=0022
+	daemonCmd.Flags().BoolVar(&mountUniqName, MountUniqNameFlag, false, "Set mountpoint based on definition and not the name of volume")
 }
 
 func setupLogger(cmd *cobra.Command, args []string) {
