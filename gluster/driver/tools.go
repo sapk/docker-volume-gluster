@@ -53,7 +53,7 @@ func (d *GlusterDriver) runCmd(cmd string) error {
 
 func getMountName(d *GlusterDriver, r volume.Request) string {
 	if d.mountUniqName {
-		url.PathEscape(r.Options["voluri"])
+		return url.PathEscape(r.Options["voluri"])
 	}
 	return url.PathEscape(r.Name)
 }

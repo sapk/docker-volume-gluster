@@ -1,6 +1,10 @@
 package driver
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/docker/go-plugins-helpers/volume"
+)
 
 func TestInit(t *testing.T) {
 	d := Init("/tmp/test-root", "", false)
@@ -12,4 +16,32 @@ func TestInit(t *testing.T) {
 				t.Error("Expected file to exist, got ", err)
 			}
 	*/
+}
+
+func TestMountName(t *testing.T) {
+	name := getMountName(&GlusterDriver{
+		mountUniqName: false,
+	}, volume.Request{
+		Name: "test",
+		Options: map[string]string{
+			"voluri": "gluster-node:volname",
+		},
+	})
+
+	if name != "test" {
+		t.Error("Expected to be test, got ", name)
+	}
+
+	nameuniq := getMountName(&GlusterDriver{
+		mountUniqName: true,
+	}, volume.Request{
+		Name: "test",
+		Options: map[string]string{
+			"voluri": "gluster-node:volname",
+		},
+	})
+
+	if nameuniq != "gluster-node:volname" {
+		t.Error("Expected to be gluster-node:volname, got ", name)
+	}
 }
