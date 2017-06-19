@@ -1,19 +1,22 @@
+FROM golang AS build-env
+
+COPY . /go/src/app
+WORKDIR /go/src/app
+
+RUN make build
+
 FROM debian:testing-slim
 MAINTAINER Antoine GIRARD <antoine.girard@sapk.fr>
 
-ENV GOPATH=/usr/share/docker-volume-gluster
+RUN apt-get update \
+ && apt-get install -y glusterfs-client \
+ && mkdir -p /var/lib/docker-volumes/gluster \
+ && apt-get autoclean -y && apt-get clean -y \
+ && rm -rf /var/lib/apt/lists/*
 
-ADD . ${GOPATH}
+COPY --from=build-env /go/src/app/docker-volume-gluster /usr/bin/docker-volume-gluster
 
-RUN apt-get update && apt-get upgrade -y \
- && apt-get install -y \
-          golang glusterfs-client git build-essential \
- && cd $GOPATH && make \
- && mv ./docker-volume-gluster /usr/bin/docker-volume-gluster \
- && cd && mkdir -p /var/lib/docker-volumes/gluster \
- && apt-get remove -y golang git build-essential \
- && apt-get autoremove -y && apt-get autoclean -y && apt-get clean -y \
- && rm -rf $GOPATH /var/lib/apt/lists/*
+RUN /usr/bin/docker-volume-gluster version
 
 ENTRYPOINT [ "/usr/bin/docker-volume-gluster" ]
 CMD [ "daemon" ]

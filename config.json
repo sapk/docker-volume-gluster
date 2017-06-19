@@ -14,6 +14,12 @@
             "value": "0"
         }
     ],
+    "Args": {
+        "Description": "Arguments to be passed to the plugin",
+        "Name": "args",
+        "Settable": ["value"],
+        "Value": []
+    },
     "interface": {
         "socket": "gluster.sock",
         "types": [
