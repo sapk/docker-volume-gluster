@@ -9,6 +9,13 @@ Status : **proof of concept (working)**
 
 Use GlusterFS cli in the plugin container so it depend on fuse on the host.
 
+## Docker plugin (New & Easy method)
+```
+docker plugin install sapk/plugin-gluster
+docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
+docker run -v test:/mnt --rm -ti ubuntu
+```
+
 ## Build
 ```
 make
@@ -41,15 +48,6 @@ Global Flags:
 docker volume create --driver gluster --opt voluri="<volumeserver>:<volumename>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
 ```
-
-## Docker plugin (New)
-```
-docker plugin install sapk/plugin-gluster
-docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
-docker run -v test:/mnt --rm -ti ubuntu
-```
-
-
 
 ## Docker-compose
 ```
