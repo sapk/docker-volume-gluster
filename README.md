@@ -1,7 +1,8 @@
 # docker-volume-gluster [![License](https://img.shields.io/badge/license-MIT-red.svg)](https://github.com/sapk/docker-volume-gluster/blob/master/LICENSE) ![Project Status](http://img.shields.io/badge/status-alpha-red.svg)
 [![GitHub release](https://img.shields.io/github/release/sapk/docker-volume-gluster.svg)](https://github.com/sapk/docker-volume-gluster/releases) [![Go Report Card](https://goreportcard.com/badge/github.com/sapk/docker-volume-gluster)](https://goreportcard.com/report/github.com/sapk/docker-volume-gluster)
 [![codecov](https://codecov.io/gh/sapk/docker-volume-gluster/branch/master/graph/badge.svg)](https://codecov.io/gh/sapk/docker-volume-gluster)
- master : [![Travis master](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=master)](https://travis-ci.org/sapk/docker-volume-gluster) develop : [![Travis develop](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=develop)](https://travis-ci.org/sapk/docker-volume-gluster)
+ master : [![Travis master](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=master)](https://travis-ci.org/sapk/docker-volume-gluster) develop : [![Travis develop](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=develop)](https://travis-ci.org/sapk/docker-volume-gluster) 
+
 
 Use GlusterFS as a backend for docker volume
 
@@ -9,7 +10,7 @@ Status : **proof of concept (working)**
 
 Use GlusterFS cli in the plugin container so it depend on fuse on the host.
 
-## Docker plugin (New & Easy method)
+## Docker plugin (New & Easy method) [![Docker Pulls](https://img.shields.io/docker/pulls/sapk/plugin-gluster.svg)](https://hub.docker.com/r/sapk/plugin-gluster) [![ImageLayers Size](https://img.shields.io/imagelayers/image-size/sapk/plugin-gluster/latest.svg)](https://hub.docker.com/r/sapk/plugin-gluster)
 ```
 docker plugin install sapk/plugin-gluster
 docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
