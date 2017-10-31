@@ -10,7 +10,7 @@ MAINTAINER Antoine GIRARD <antoine.girard@sapk.fr>
 
 RUN apt-get update \
  && apt-get install -y glusterfs-client \
- && mkdir -p /var/lib/docker-volumes/gluster \
+ && mkdir -p /var/lib/docker-volumes/gluster /etc/docker-volumes/gluster \
  && apt-get autoclean -y && apt-get clean -y \
  && rm -rf /var/lib/apt/lists/*
 
