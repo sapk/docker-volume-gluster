@@ -39,5 +39,13 @@
     "network": {
         "type": "host"
     },
+    "mounts": [
+        {
+            "type": "bind",
+            "destination": "/etc/docker-volumes/gluster",
+            "source": "/etc/docker-volumes/gluster",
+            "options": ["rw"]
+        }
+    ],
     "propagatedmount": "/var/lib/docker-volumes/gluster"
 }
