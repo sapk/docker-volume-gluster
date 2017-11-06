@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 
 	//Startplugin with empty config
 	go setupPlugin()
-	time.Sleep(5 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	//Do tests
 	retVal := m.Run()
@@ -120,7 +120,6 @@ func getContainerIP(cid string) string {
 }
 
 func TestIntegration(t *testing.T) {
-	time.Sleep(5 * time.Second)
 
 	containers := getGlusterClusterContainers()
 	log.Print("CIDs : ", containers)
@@ -128,9 +127,12 @@ func TestIntegration(t *testing.T) {
 	log.Print("IP node-1 : ", ip)
 
 	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-replica\"", "--name", "test-replica"))
+	time.Sleep(5 * time.Second)
 	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-distributed\"", "--name", "test-distributed"))
+	time.Sleep(5 * time.Second)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
 	log.Print(cmd("docker", "run", "--rm", "-v", "test-replica:/mnt", "alpine", "/bin/sh", "-c", "'date'"))
+	time.Sleep(5 * time.Second)
 	log.Print(cmd("docker", "run", "--rm", "-v", "test-distributed:/mnt", "alpine", "/bin/sh", "-c", "'date'"))
 }
