@@ -49,7 +49,7 @@ var (
 	daemonCmd = &cobra.Command{
 		Use:   "daemon",
 		Short: "Run listening volume drive deamon to listen for mount request",
-		Run:   daemonStart,
+		Run:   DaemonStart,
 	}
 	versionCmd = &cobra.Command{
 		Use:   "version",
@@ -70,7 +70,8 @@ func Start() {
 	}
 }
 
-func daemonStart(cmd *cobra.Command, args []string) {
+//DaemonStart Start the deamon
+func DaemonStart(cmd *cobra.Command, args []string) {
 	d := driver.Init(baseDir, fuseOpts, mountUniqName)
 	log.Debug(d)
 	h := volume.NewHandler(d)

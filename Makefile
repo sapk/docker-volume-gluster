@@ -131,10 +131,12 @@ format:
 	@echo -e "$(OK_COLOR)==> Formatting...$(NO_COLOR)"
 	go fmt ./gluster/...
 
-test: deps format
+test: dev-deps deps format
 	@echo -e "$(OK_COLOR)==> Running tests...$(NO_COLOR)"
 	go vet ./gluster/... || true
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./gluster/driver
+	go test -v -race -coverprofile=coverage.unit.out -covermode=atomic ./gluster/driver
+	go test -v -race -coverprofile=coverage.inte.out -covermode=atomic ./gluster/integration
+	gocovmerge `ls coverage.*.out` > coverage.out
 	go tool cover -html=coverage.out -o coverage.html
 
 docs:
@@ -151,6 +153,7 @@ dev-deps:
 	@go get github.com/nsf/gocode
 	@go get github.com/alecthomas/gometalinter
 	@go get github.com/dpw/vendetta #Vendoring
+	@go get github.com/wadey/gocovmerge
 	@$(GOPATH)/bin/gometalinter --install > /dev/null
 
 update-dev-deps:
@@ -158,6 +161,7 @@ update-dev-deps:
 	go get -u github.com/nsf/gocode
 	go get -u github.com/alecthomas/gometalinter
 	go get -u github.com/dpw/vendetta #Vendoring
+	go get -u github.com/wadey/gocovmerge
 	$(GOPATH)/bin/gometalinter --install --update
 
 deps:

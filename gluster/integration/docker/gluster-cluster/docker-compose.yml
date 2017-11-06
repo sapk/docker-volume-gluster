@@ -1,0 +1,45 @@
+version: '2'
+
+services:
+  node-1:
+    image: sapk/glusterfs
+#    devices:
+#      - /dev/fuse:/dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - ./glusterd.vol:/etc/glusterfs/glusterd.vol:ro
+      - state-node-1:/var/lib/glusterd
+#      - ./data/node-1/brick:/brick
+      - brick-node-1:/brick
+  node-2:
+    image: sapk/glusterfs
+#    devices:
+#      - /dev/fuse:/dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - ./glusterd.vol:/etc/glusterfs/glusterd.vol:ro
+      - state-node-2:/var/lib/glusterd
+#      - ./data/node-2/brick:/brick
+      - brick-node-2:/brick
+  node-3:
+    image: sapk/glusterfs
+#    devices:
+#      - /dev/fuse:/dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - ./glusterd.vol:/etc/glusterfs/glusterd.vol:ro
+      - state-node-3:/var/lib/glusterd
+#      - ./data/node-3/brick:/brick
+      - brick-node-3:/brick
+
+
+volumes:
+  state-node-1:
+  state-node-2:
+  state-node-3:
+  brick-node-1:
+  brick-node-2:
+  brick-node-3:

@@ -21,9 +21,9 @@ type GlusterPersistence struct {
 }
 
 func (d *GlusterDriver) saveConfig() error {
-	fi, err := os.Lstat(cfgFolder)
+	fi, err := os.Lstat(CfgFolder)
 	if os.IsNotExist(err) {
-		if err = os.MkdirAll(cfgFolder, 0700); err != nil {
+		if err = os.MkdirAll(CfgFolder, 0700); err != nil {
 			return err
 		}
 	} else if err != nil {
@@ -32,12 +32,12 @@ func (d *GlusterDriver) saveConfig() error {
 	if fi != nil && !fi.IsDir() {
 		return fmt.Errorf("%v already exist and it's not a directory", d.root)
 	}
-	b, err := json.Marshal(GlusterPersistence{Version: cfgVersion, Volumes: d.volumes, Mounts: d.mounts})
+	b, err := json.Marshal(GlusterPersistence{Version: CfgVersion, Volumes: d.volumes, Mounts: d.mounts})
 	if err != nil {
 		log.Warn("Unable to encode persistence struct, %v", err)
 	}
 	//log.Debug("Writing persistence struct, %v", b, d.volumes)
-	err = ioutil.WriteFile(cfgFolder+"/persistence.json", b, 0600)
+	err = ioutil.WriteFile(CfgFolder+"/persistence.json", b, 0600)
 	if err != nil {
 		log.Warn("Unable to write persistence struct, %v", err)
 	}

@@ -12,11 +12,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
+var (
 	//MountTimeout timeout before killing a mount try in seconds
 	MountTimeout = 30
-	cfgVersion   = 1
-	cfgFolder    = "/etc/docker-volumes/gluster/"
+	//CfgVersion current config version compat
+	CfgVersion = 1
+	//CfgFolder config folder
+	CfgFolder = "/etc/docker-volumes/gluster/"
 )
 
 type glusterMountpoint struct {
@@ -55,7 +57,7 @@ func Init(root string, fuseOpts string, mountUniqName bool) *GlusterDriver {
 	d.persitence.SetDefault("volumes", map[string]*glusterVolume{})
 	d.persitence.SetConfigName("persistence")
 	d.persitence.SetConfigType("json")
-	d.persitence.AddConfigPath(cfgFolder)
+	d.persitence.AddConfigPath(CfgFolder)
 	if err := d.persitence.ReadInConfig(); err != nil { // Handle errors reading the config file
 		log.Warn("No persistence file found, I will start with a empty list of volume.", err)
 	} else {
@@ -63,7 +65,7 @@ func Init(root string, fuseOpts string, mountUniqName bool) *GlusterDriver {
 
 		var version int
 		err := d.persitence.UnmarshalKey("version", &version)
-		if err != nil || version != cfgVersion {
+		if err != nil || version != CfgVersion {
 			log.Warn("Unable to decode version of persistence, %v", err)
 			d.volumes = make(map[string]*glusterVolume)
 			d.mounts = make(map[string]*glusterMountpoint)
