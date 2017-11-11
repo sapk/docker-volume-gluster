@@ -158,6 +158,9 @@ func (d *GlusterDriver) Remove(r volume.Request) volume.Response {
 			delete(d.mounts, v.Mount)
 		}
 		delete(d.volumes, r.Name)
+		if err := d.saveConfig(); err != nil {
+			return volume.Response{Err: err.Error()}
+		}
 		return volume.Response{}
 	}
 	if err := d.saveConfig(); err != nil {
