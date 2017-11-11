@@ -53,7 +53,7 @@ func Init(root string, fuseOpts string, mountUniqName bool) *GlusterDriver {
 	}
 
 	d.persitence.SetDefault("volumes", map[string]*glusterVolume{})
-	d.persitence.SetConfigName("gluster-persistence")
+	d.persitence.SetConfigName("persistence")
 	d.persitence.SetConfigType("json")
 	d.persitence.AddConfigPath(cfgFolder)
 	if err := d.persitence.ReadInConfig(); err != nil { // Handle errors reading the config file
