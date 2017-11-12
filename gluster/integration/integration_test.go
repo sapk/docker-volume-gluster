@@ -17,16 +17,14 @@ import (
 	"github.com/sapk/docker-volume-gluster/gluster/driver"
 )
 
+const timeInterval = 5 * time.Second
+
 func TestMain(m *testing.M) {
 	//TODO check system for gluster, docker and docker-compose (install container version if needed)
 	//TODO need root to start plugin
 
 	//Setup
 	setupGlusterCluster()
-
-	//Startplugin with empty config
-	go setupPlugin()
-	time.Sleep(15 * time.Second)
 
 	//Do tests
 	retVal := m.Run()
@@ -42,17 +40,18 @@ func setupPlugin() {
 	log.Print(cmd("rm", "-rf", driver.CfgFolder))
 	log.SetLevel(log.DebugLevel)
 	gluster.DaemonStart(nil, []string{})
-	time.Sleep(5 * time.Second)
+	time.Sleep(timeInterval)
 	log.Print(cmd("docker", "plugin", "ls"))
 }
+
 func setupGlusterCluster() {
 	pwd := currentPWD()
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "up", "-d"))
-	time.Sleep(5 * time.Second)
+	time.Sleep(timeInterval)
 	nodes := []string{"node-1", "node-2", "node-3"}
 
 	for _, n := range nodes {
-		time.Sleep(1 * time.Second)
+		time.Sleep(timeInterval)
 		log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", n, "mkdir", "-p", "/brick"))
 		/*
 			time.Sleep(1 * time.Second)
@@ -65,31 +64,32 @@ func setupGlusterCluster() {
 	containers := getGlusterClusterContainers()
 	log.Print("CIDs : ", containers)
 	for _, n := range []int{1, 2} {
-		time.Sleep(1 * time.Second)
+		time.Sleep(timeInterval)
 		ip := getContainerIP(containers[n])
 		log.Print("IP node-"+strconv.Itoa(n+1)+" : ", ip)
 		log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "peer", "probe", ip))
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(timeInterval)
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "pool", "list"))
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "peer", "status"))
-	time.Sleep(1 * time.Second)
+	time.Sleep(timeInterval)
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "volume", "create", "test-replica", "replica", "3", "node-1:/brick/replica", "node-2:/brick/replica", "node-3:/brick/replica"))
-	time.Sleep(1 * time.Second)
+	time.Sleep(timeInterval)
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "volume", "create", "test-distributed", "node-1:/brick/distributed", "node-2:/brick/distributed", "node-3:/brick/distributed"))
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(timeInterval)
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "volume", "start", "test-replica"))
-	time.Sleep(1 * time.Second)
+	time.Sleep(timeInterval)
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "volume", "start", "test-distributed"))
-	time.Sleep(1 * time.Second)
+	time.Sleep(timeInterval)
 }
 
 //gluster pool list
 func cleanGlusterCluster() {
 	pwd := currentPWD()
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "down"))
+	log.Print(cmd("docker", "volume", "rm", "-f", "distributed", "replica"))
 	log.Print(cmd("docker", "volume", "prune", "-f"))
 	//TODO log.Print(cmd("docker", "system", "prune", "-af"))
 }
@@ -121,21 +121,24 @@ func getContainerIP(cid string) string {
 }
 
 func TestIntegration(t *testing.T) {
+	//Startplugin with empty config
+	go setupPlugin()
+	time.Sleep(3 * timeInterval)
 
 	containers := getGlusterClusterContainers()
 	log.Print("CIDs : ", containers)
 	ip := getContainerIP(containers[0])
 	log.Print("IP node-1 : ", ip)
 
-	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-replica\"", "test-replica"))
-	time.Sleep(5 * time.Second)
-	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-distributed\"", "test-distributed"))
-	time.Sleep(5 * time.Second)
+	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-replica\"", "replica"))
+	time.Sleep(timeInterval)
+	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-distributed\"", "distributed"))
+	time.Sleep(timeInterval)
 	log.Print(cmd("docker", "volume", "ls"))
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * timeInterval)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
-	log.Print(cmd("docker", "run", "--rm", "-v", "test-replica:/mnt", "alpine", "/bin/sh", "-c", "'date'"))
-	time.Sleep(5 * time.Second)
-	log.Print(cmd("docker", "run", "--rm", "-v", "test-distributed:/mnt", "alpine", "/bin/sh", "-c", "'date'"))
+	log.Print(cmd("docker", "run", "--rm", "-ti", "-v", "replica:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
+	time.Sleep(3 * timeInterval)
+	log.Print(cmd("docker", "run", "--rm", "-ti", "-v", "distributed:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
 }
