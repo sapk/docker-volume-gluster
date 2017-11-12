@@ -138,7 +138,7 @@ func TestIntegration(t *testing.T) {
 	time.Sleep(3 * timeInterval)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
-	log.Print(cmd("docker", "run", "--rm", "-ti", "-v", "replica:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
 	time.Sleep(3 * timeInterval)
-	log.Print(cmd("docker", "run", "--rm", "-ti", "-v", "distributed:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
 }
