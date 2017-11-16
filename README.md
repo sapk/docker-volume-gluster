@@ -17,12 +17,31 @@ docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<
 docker run -v test:/mnt --rm -ti ubuntu
 ```
 
-## Build
+## Create and Mount volume
+```
+docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
+docker run -v test:/mnt --rm -ti ubuntu
+```
+
+## Docker-compose
+```
+volumes:
+  some_vol:
+    driver: sapk/plugin-gluster
+    driver_opts:
+      voluri: "<volumeserver>:<volumename>"
+```
+
+## Legacy plugin installation
+For Docker version 1.12 or below, the managed plugin system is not supported. This also happens if the plugin is not installed via
+`docker plugin install`. That way, the driver's name will be just `gluster` (in both the CLI and Compose environments):
+
+### Build
 ```
 make
 ```
 
-## Start daemon
+### Start daemon
 ```
 ./docker-volume-gluster daemon
 OR in a docker container
@@ -44,24 +63,7 @@ Global Flags:
   -v, --verbose          Turns on verbose logging
 ```
 
-## Create and Mount volume
-```
-docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
-docker run -v test:/mnt --rm -ti ubuntu
-```
-
-## Docker-compose
-```
-volumes:
-  some_vol:
-    driver: sapk/plugin-gluster
-    driver_opts:
-      voluri: "<volumeserver>:<volumename>"
-```
-
-## Legacy plugin installation
-For Docker version 1.12 or below, the managed plugin system is not supported. This also happens if the plugin is not installed via
-`docker plugin install`. That way, the driver's name will be just `gluster` (in both the CLI and Compose environments):
+### Create and Mount volume
 ```
 docker volume create --driver gluster --opt voluri="<volumeserver>:<volumename>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
