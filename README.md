@@ -46,7 +46,7 @@ Global Flags:
 
 ## Create and Mount volume
 ```
-docker volume create --driver gluster --opt voluri="<volumeserver>:<volumename>" --name test
+docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
 ```
 
@@ -58,6 +58,18 @@ volumes:
     driver_opts:
       voluri: "<volumeserver>:<volumename>"
 ```
+
+## Legacy plugin installation
+For Docker version 1.12 or below, the managed plugin system is not supported. This also happens if the plugin is not installed via
+`docker plugin install`. That way, the driver's name will be just `gluster` (in both the CLI and Compose environments):
+```
+docker volume create --driver gluster --opt voluri="<volumeserver>:<volumename>" --name test
+docker run -v test:/mnt --rm -ti ubuntu
+```
+
+[Docker's new plugin system](https://docs.docker.com/engine/extend/) is the preferred way to add drivers and plugins, where the plugin is just
+an image downloaded from registry containing the executable and needed configuration files. You can run both legacy and new plugins
+in Docker versions above 1.12, but be aware that legacy plugins will not show up on `docker plugin ls`. They will be listed instead under `plugins` on `docker info`.
 
 ## Inspired from :
  - https://github.com/ContainX/docker-volume-netshare/
