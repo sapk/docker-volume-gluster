@@ -16,11 +16,12 @@ import (
 //GlusterPersistence represent struct of persistence file
 type GlusterPersistence struct {
 	Version int                           `json:"version"`
-	Volumes map[string]*glusterVolume     `json:"volumes"`
-	Mounts  map[string]*glusterMountpoint `json:"mounts"`
+	Volumes map[string]*GlusterVolume     `json:"volumes"`
+	Mounts  map[string]*GlusterMountpoint `json:"mounts"`
 }
 
-func (d *GlusterDriver) saveConfig() error {
+//SaveConfig stroe config/state in file  //TODO put inside common
+func (d *GlusterDriver) SaveConfig() error {
 	fi, err := os.Lstat(CfgFolder)
 	if os.IsNotExist(err) {
 		if err = os.MkdirAll(CfgFolder, 0700); err != nil {
@@ -45,13 +46,13 @@ func (d *GlusterDriver) saveConfig() error {
 	return err
 }
 
-// run deamon in context of this gvfs drive with custome env
-func (d *GlusterDriver) runCmd(cmd string) error {
+//RunCmd run deamon in context of this gvfs drive with custome env
+func (d *GlusterDriver) RunCmd(cmd string) error {
 	log.Debugf(cmd)
 	return exec.Command("sh", "-c", cmd).Run()
 }
 
-func getMountName(d *GlusterDriver, r volume.Request) string {
+func getMountName(d *GlusterDriver, r volume.CreateRequest) string {
 	if d.mountUniqName {
 		return url.PathEscape(r.Options["voluri"])
 	}
