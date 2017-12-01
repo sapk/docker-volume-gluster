@@ -21,7 +21,7 @@ func TestInit(t *testing.T) {
 func TestMountName(t *testing.T) {
 	name := getMountName(&GlusterDriver{
 		mountUniqName: false,
-	}, volume.CreateRequest{
+	}, &volume.CreateRequest{
 		Name: "test",
 		Options: map[string]string{
 			"voluri": "gluster-node:volname",
@@ -34,7 +34,7 @@ func TestMountName(t *testing.T) {
 
 	nameuniq := getMountName(&GlusterDriver{
 		mountUniqName: true,
-	}, volume.CreateRequest{
+	}, &volume.CreateRequest{
 		Name: "test",
 		Options: map[string]string{
 			"voluri": "gluster-node:volname",

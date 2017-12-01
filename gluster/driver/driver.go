@@ -127,7 +127,7 @@ func Init(root string, fuseOpts string, mountUniqName bool) *GlusterDriver {
 }
 
 //Create create and init the requested volume
-func (d *GlusterDriver) Create(r volume.CreateRequest) error {
+func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
 	log.Debugf("Entering Create: name: %s, options %v", r.Name, r.Options)
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
@@ -180,7 +180,7 @@ func (d *GlusterDriver) List() (*volume.ListResponse, error) {
 }
 
 //Get get info on the requested volume
-func (d *GlusterDriver) Get(r volume.GetRequest) (*volume.GetResponse, error) {
+func (d *GlusterDriver) Get(r *volume.GetRequest) (*volume.GetResponse, error) {
 	_, m, err := common.Get(d, r.Name)
 	if err != nil {
 		return nil, err

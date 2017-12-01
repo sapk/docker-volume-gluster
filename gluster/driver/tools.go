@@ -52,7 +52,7 @@ func (d *GlusterDriver) RunCmd(cmd string) error {
 	return exec.Command("sh", "-c", cmd).Run()
 }
 
-func getMountName(d *GlusterDriver, r volume.CreateRequest) string {
+func getMountName(d *GlusterDriver, r *volume.CreateRequest) string {
 	if d.mountUniqName {
 		return url.PathEscape(r.Options["voluri"])
 	}
