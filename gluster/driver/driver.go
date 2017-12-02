@@ -52,6 +52,12 @@ func (v *GlusterVolume) GetConnections() *int {
 	return &v.Connections
 }
 
+func (v *GlusterVolume) GetStatus() map[string]interface{} {
+	return map[string]interface{}{
+		"TODO": "List",
+	}
+}
+
 //GlusterDriver the global driver responding to call
 type GlusterDriver struct {
 	lock          sync.RWMutex
@@ -181,11 +187,11 @@ func (d *GlusterDriver) List() (*volume.ListResponse, error) {
 
 //Get get info on the requested volume
 func (d *GlusterDriver) Get(r *volume.GetRequest) (*volume.GetResponse, error) {
-	_, m, err := common.Get(d, r.Name)
+	v, m, err := common.Get(d, r.Name)
 	if err != nil {
 		return nil, err
 	}
-	return &volume.GetResponse{Volume: &volume.Volume{Name: r.Name, Mountpoint: m.GetPath()}}, nil
+	return &volume.GetResponse{Volume: &volume.Volume{Name: r.Name, Status: v.GetStatus(), Mountpoint: m.GetPath()}}, nil
 }
 
 //Remove remove the requested volume

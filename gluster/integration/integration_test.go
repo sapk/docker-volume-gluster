@@ -13,6 +13,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/sapk/docker-volume-gluster/gluster"
 	"github.com/sapk/docker-volume-gluster/gluster/driver"
 )
@@ -36,12 +37,15 @@ func TestMain(m *testing.M) {
 }
 
 func setupPlugin() {
-	driver.CfgFolder = "/etc/docker-volumes/gluster-integration"
+	driver.CfgFolder = "/etc/docker-volumes/" + gluster.PluginAlias
 	log.Print(cmd("rm", "-rf", driver.CfgFolder))
 	log.SetLevel(log.DebugLevel)
+	gluster.PluginAlias = "gluster-local-integration"
+	gluster.BaseDir = filepath.Join(volume.DefaultDockerRootDirectory, gluster.PluginAlias)
 	gluster.DaemonStart(nil, []string{})
 	time.Sleep(timeInterval)
-	log.Print(cmd("docker", "plugin", "ls"))
+	//log.Print(cmd("docker", "plugin", "ls"))
+	log.Print(cmd("docker", "info", "-f", "{{.Plugins.Volume}}"))
 }
 
 func setupGlusterCluster() {
@@ -130,15 +134,17 @@ func TestIntegration(t *testing.T) {
 	ip := getContainerIP(containers[0])
 	log.Print("IP node-1 : ", ip)
 
-	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-replica\"", "replica"))
+	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+":test-replica\"", "replica"))
 	time.Sleep(timeInterval)
-	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-distributed\"", "distributed"))
+	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+":test-distributed\"", "distributed"))
 	time.Sleep(timeInterval)
 	log.Print(cmd("docker", "volume", "ls"))
 	time.Sleep(3 * timeInterval)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
-	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/sh", "-c", "'ls /mnt'"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/sh", "-c", "'date'"))
 	time.Sleep(3 * timeInterval)
-	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/sh", "-c", "'ls /mnt'"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/sh", "-c", "'date'"))
 }

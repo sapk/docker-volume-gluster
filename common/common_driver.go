@@ -24,6 +24,7 @@ type Volume interface {
 	GetMount() string
 	GetRemote() string
 	GetConnections() *int
+	GetStatus() map[string]interface{}
 }
 
 //Mount needed interface for some commons interactions
@@ -63,7 +64,7 @@ func List(d Driver) (*volume.ListResponse, error) {
 		if err != nil {
 			return nil, err
 		}
-		vols = append(vols, &volume.Volume{Name: name, Mountpoint: m.GetPath()})
+		vols = append(vols, &volume.Volume{Name: name, Status: v.GetStatus(), Mountpoint: m.GetPath()})
 	}
 	return &volume.ListResponse{Volumes: vols}, nil
 }
