@@ -30,8 +30,13 @@ type GlusterMountpoint struct {
 func (d *GlusterMountpoint) GetPath() string {
 	return d.Path
 }
-func (d *GlusterMountpoint) GetConnections() *int {
-	return &d.Connections
+
+func (d *GlusterMountpoint) GetConnections() int {
+	return d.Connections
+}
+
+func (d *GlusterMountpoint) SetConnections(n int) {
+	d.Connections = n
 }
 
 type GlusterVolume struct {
@@ -48,8 +53,12 @@ func (v *GlusterVolume) GetRemote() string {
 	return v.VolumeURI
 }
 
-func (v *GlusterVolume) GetConnections() *int {
-	return &v.Connections
+func (v *GlusterVolume) GetConnections() int {
+	return v.Connections
+}
+
+func (v *GlusterVolume) SetConnections(n int) {
+	v.Connections = n
 }
 
 func (v *GlusterVolume) GetStatus() map[string]interface{} {
@@ -228,8 +237,7 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 		return nil, err
 	}
 
-	*v.GetConnections()++
-	*m.GetConnections()++
+	common.AddN(1, v, m)
 	return &volume.MountResponse{Mountpoint: m.GetPath()}, d.SaveConfig()
 }
 

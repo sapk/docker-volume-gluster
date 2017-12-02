@@ -21,16 +21,21 @@ type Driver interface {
 
 //Volume needed interface for some commons interactions
 type Volume interface {
+	increasable
 	GetMount() string
 	GetRemote() string
-	GetConnections() *int
 	GetStatus() map[string]interface{}
 }
 
 //Mount needed interface for some commons interactions
 type Mount interface {
+	increasable
 	GetPath() string
-	GetConnections() *int
+}
+
+type increasable interface {
+	GetConnections() int
+	SetConnections(int)
 }
 
 func getMount(d Driver, mPath string) (Mount, error) {
@@ -86,8 +91,8 @@ func Remove(d Driver, vName string) error {
 	if err != nil {
 		return err
 	}
-	if *v.GetConnections() == 0 {
-		if *m.GetConnections() == 0 {
+	if v.GetConnections() == 0 {
+		if m.GetConnections() == 0 {
 			if err := os.Remove(m.GetPath()); err != nil {
 				return err
 			}
@@ -105,12 +110,23 @@ func MountExist(d Driver, vName string) (Volume, Mount, error) {
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
 	v, m, err := getVolumeMount(d, vName)
-	if err == nil && v != nil && m != nil && *m.GetConnections() > 0 {
-		*v.GetConnections()++
-		*m.GetConnections()++
+	if err == nil && v != nil && m != nil && m.GetConnections() > 0 {
+		AddN(1, m, v)
 		return v, m, d.SaveConfig()
 	}
 	return v, m, err
+}
+
+func SetN(val int, oList ...increasable) {
+	for _, o := range oList {
+		o.SetConnections(val)
+	}
+}
+
+func AddN(val int, oList ...increasable) {
+	for _, o := range oList {
+		o.SetConnections(o.GetConnections() + val)
+	}
 }
 
 //Unmount wrapper around github.com/docker/go-plugins-helpers/volume
@@ -118,21 +134,19 @@ func Unmount(d Driver, vName string) error {
 	log.Debugf("Entering Unmount: name: %s", vName)
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
-	_, m, err := getVolumeMount(d, vName)
+	v, m, err := getVolumeMount(d, vName)
 	if err != nil {
 		return err
 	}
 
-	if *m.GetConnections() <= 1 {
+	if m.GetConnections() <= 1 {
 		cmd := fmt.Sprintf("/usr/bin/umount %s", m.GetPath())
 		if err := d.RunCmd(cmd); err != nil {
 			return err
 		}
-		*m.GetConnections() = 0
-		*m.GetConnections() = 0
+		SetN(0, m, v)
 	} else {
-		*m.GetConnections()--
-		*m.GetConnections()--
+		AddN(-1, m, v)
 	}
 
 	return d.SaveConfig()
