@@ -35,9 +35,12 @@ volumes:
 
 ## Additionnal docker-plugin config
 ```
-After : docker plugin install sapk/plugin-gluster
- docker plugin set PLUGIN DEBUG=1 #Activate --verbose
- docker plugin set PLUGIN MOUNT_UNIQ=1 #Activate --mount-uniq
+docker plugin disable sapk/plugin-gluster
+
+docker plugin set PLUGIN DEBUG=1 #Activate --verbose
+docker plugin set PLUGIN MOUNT_UNIQ=1 #Activate --mount-uniq
+
+docker plugin enable sapk/plugin-gluster
 ```
  
  
