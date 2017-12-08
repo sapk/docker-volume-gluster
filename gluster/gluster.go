@@ -85,9 +85,11 @@ func DaemonStart(cmd *cobra.Command, args []string) {
 func setupFlags() {
 	rootCmd.PersistentFlags().BoolP(VerboseFlag, "v", false, "Turns on verbose logging")
 	rootCmd.PersistentFlags().StringVarP(&baseDir, BasedirFlag, "b", filepath.Join(volume.DefaultDockerRootDirectory, PluginAlias), "Mounted volume base directory")
-
+	viper.BindPFlag("debug", rootCmd.Flags().Lookup(VerboseFlag))
+	
 	daemonCmd.Flags().StringVarP(&fuseOpts, FuseFlag, "o", "", "Fuse options to use for gluster mount point") //Other ex  big_writes,use_ino,allow_other,auto_cache,umask=0022
 	daemonCmd.Flags().BoolVar(&mountUniqName, MountUniqNameFlag, false, "Set mountpoint based on definition and not the name of volume")
+	viper.BindPFlag("mount_uniq", daemonCmd.Flags().Lookup(MountUniqNameFlag))
 }
 
 func setupLogger(cmd *cobra.Command, args []string) {
