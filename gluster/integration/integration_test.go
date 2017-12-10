@@ -37,11 +37,12 @@ func TestMain(m *testing.M) {
 }
 
 func setupPlugin() {
+	gluster.PluginAlias = "gluster-local-integration"
+	gluster.BaseDir = filepath.Join(volume.DefaultDockerRootDirectory, gluster.PluginAlias)
 	driver.CfgFolder = "/etc/docker-volumes/" + gluster.PluginAlias
 	log.Print(cmd("rm", "-rf", driver.CfgFolder))
 	log.SetLevel(log.DebugLevel)
-	gluster.PluginAlias = "gluster-local-integration"
-	gluster.BaseDir = filepath.Join(volume.DefaultDockerRootDirectory, gluster.PluginAlias)
+
 	gluster.DaemonStart(nil, []string{})
 	time.Sleep(timeInterval)
 	//log.Print(cmd("docker", "plugin", "ls"))
@@ -133,10 +134,16 @@ func TestIntegration(t *testing.T) {
 	log.Print("CIDs : ", containers)
 	ip := getContainerIP(containers[0])
 	log.Print("IP node-1 : ", ip)
+	ip2 := getContainerIP(containers[1])
+	log.Print("IP node-2 : ", ip2)
 
 	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+":test-replica\"", "replica"))
 	time.Sleep(timeInterval)
 	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+":test-distributed\"", "distributed"))
+	time.Sleep(timeInterval)
+	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+","+ip2+":test-replica\"", "replica-double-server"))
+	time.Sleep(timeInterval)
+	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+","+ip2+":test-distributed\"", "distributed-double-server"))
 	time.Sleep(timeInterval)
 	log.Print(cmd("docker", "volume", "ls"))
 	time.Sleep(3 * timeInterval)
@@ -145,9 +152,16 @@ func TestIntegration(t *testing.T) {
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/ls", "/mnt"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cat", "/mnt/container"))
-
 	time.Sleep(3 * timeInterval)
+
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/ls", "/mnt"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cat", "/mnt/container"))
+	time.Sleep(3 * timeInterval)
+
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/ls", "/mnt"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/cat", "/mnt/container"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed-double-server:/mnt", "alpine", "/bin/ls", "/mnt"))
+	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed-double-server:/mnt", "alpine", "/bin/cat", "/mnt/container"))
+
 }
