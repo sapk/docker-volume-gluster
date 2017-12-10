@@ -74,7 +74,7 @@ func Init() {
 
 //DaemonStart Start the deamon
 func DaemonStart(cmd *cobra.Command, args []string) {
-	d := driver.Init(BaseDir, fuseOpts, mountUniqName)
+	d := driver.Init(baseDir, mountUniqName)
 	log.Debug(d)
 	h := volume.NewHandler(d)
 	log.Debug(h)
@@ -88,7 +88,6 @@ func setupFlags() {
 	rootCmd.PersistentFlags().BoolP(VerboseFlag, "v", os.Getenv("DEBUG") == "1", "Turns on verbose logging")
 	rootCmd.PersistentFlags().StringVarP(&BaseDir, BasedirFlag, "b", filepath.Join(volume.DefaultDockerRootDirectory, PluginAlias), "Mounted volume base directory")
 
-	daemonCmd.Flags().StringVarP(&fuseOpts, FuseFlag, "o", "", "Fuse options to use for gluster mount point") //Other ex  big_writes,use_ino,allow_other,auto_cache,umask=0022
 	daemonCmd.Flags().BoolVar(&mountUniqName, MountUniqNameFlag, os.Getenv("MOUNT_UNIQ") == "1", "Set mountpoint based on definition and not the name of volume")
 }
 

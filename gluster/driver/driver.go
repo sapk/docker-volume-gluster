@@ -71,7 +71,6 @@ func (v *GlusterVolume) GetStatus() map[string]interface{} {
 type GlusterDriver struct {
 	lock          sync.RWMutex
 	root          string
-	fuseOpts      string
 	mountUniqName bool
 	persitence    *viper.Viper
 	volumes       map[string]*GlusterVolume
@@ -99,11 +98,10 @@ func (d *GlusterDriver) GetLock() *sync.RWMutex {
 }
 
 //Init start all needed deps and serve response to API call
-func Init(root string, fuseOpts string, mountUniqName bool) *GlusterDriver {
-	log.Debugf("Init gluster driver at %s, fuseOpt: '%s', UniqName: %v", root, fuseOpts, mountUniqName)
+func Init(root string, mountUniqName bool) *GlusterDriver {
+	log.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
 	d := &GlusterDriver{
 		root:          root,
-		fuseOpts:      fuseOpts,
 		mountUniqName: mountUniqName,
 		persitence:    viper.New(),
 		volumes:       make(map[string]*GlusterVolume),
