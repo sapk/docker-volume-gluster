@@ -45,6 +45,7 @@ type GlusterDriver struct {
 
 //Init start all needed deps and serve response to API call
 func Init(root string, fuseOpts string, mountUniqName bool) *GlusterDriver {
+	log.Debugf("Init gluster driver at %s, fuseOpt: '%s', UniqName: %v", root, fuseOpts, mountUniqName)
 	d := &GlusterDriver{
 		root:          root,
 		fuseOpts:      fuseOpts,

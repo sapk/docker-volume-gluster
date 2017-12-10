@@ -20,5 +20,5 @@ func main() {
 	gluster.Commit = Commit
 	gluster.Branch = Branch
 	gluster.BuildTime = BuildTime
-	gluster.Start()
+	gluster.Init()
 }
