@@ -1,7 +1,7 @@
 # docker-volume-gluster [![License](https://img.shields.io/badge/license-MIT-red.svg)](https://github.com/sapk/docker-volume-gluster/blob/master/LICENSE) ![Project Status](http://img.shields.io/badge/status-alpha-red.svg)
 [![GitHub release](https://img.shields.io/github/release/sapk/docker-volume-gluster.svg)](https://github.com/sapk/docker-volume-gluster/releases) [![Go Report Card](https://goreportcard.com/badge/github.com/sapk/docker-volume-gluster)](https://goreportcard.com/report/github.com/sapk/docker-volume-gluster)
 [![codecov](https://codecov.io/gh/sapk/docker-volume-gluster/branch/master/graph/badge.svg)](https://codecov.io/gh/sapk/docker-volume-gluster)
- master : [![Travis master](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=master)](https://travis-ci.org/sapk/docker-volume-gluster) develop : [![Travis develop](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=develop)](https://travis-ci.org/sapk/docker-volume-gluster) 
+ master : [![Travis master](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=master)](https://travis-ci.org/sapk/docker-volume-gluster) develop : [![Travis develop](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=develop)](https://travis-ci.org/sapk/docker-volume-gluster)
 
 
 Use GlusterFS as a backend for docker volume
@@ -31,23 +31,23 @@ volumes:
     driver_opts:
       voluri: "<volumeserver>:<volumename>"
 ```
- 
+
 
 ## Additionnal docker-plugin config
 ```
 docker plugin disable sapk/plugin-gluster
 
-docker plugin set PLUGIN DEBUG=1 #Activate --verbose
-docker plugin set PLUGIN MOUNT_UNIQ=1 #Activate --mount-uniq
+docker plugin set sapk/plugin-gluster DEBUG=1 #Activate --verbose
+docker plugin set sapk/plugin-gluster MOUNT_UNIQ=1 #Activate --mount-uniq
 
 docker plugin enable sapk/plugin-gluster
 ```
- 
- 
- 
+
+
+
 ## Legacy plugin installation
 For Docker version 1.12 or below, the managed plugin system is not supported. This also happens if the plugin is not installed via
-`docker plugin install`. 
+`docker plugin install`.
 [Docker's new plugin system](https://docs.docker.com/engine/extend/) is the preferred way to add drivers and plugins, where the plugin is just
 an image downloaded from registry containing the executable and needed configuration files. You can run both legacy and new plugins
 in Docker versions above 1.12, but be aware that legacy plugins will not show up on `docker plugin ls`. They will be listed instead under `plugins` on `docker info`.

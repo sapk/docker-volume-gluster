@@ -2,13 +2,13 @@ package gluster
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/sapk/docker-volume-gluster/gluster/driver"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -61,8 +61,8 @@ var (
 	}
 )
 
-//Start start the program
-func Start() {
+//Init init the program
+func Init() {
 	setupFlags()
 	rootCmd.Long = fmt.Sprintf(longHelp, Version, Branch, Commit, BuildTime)
 	rootCmd.AddCommand(versionCmd, daemonCmd)
@@ -84,18 +84,17 @@ func DaemonStart(cmd *cobra.Command, args []string) {
 }
 
 func setupFlags() {
-	rootCmd.PersistentFlags().BoolP(VerboseFlag, "v", false, "Turns on verbose logging")
+	rootCmd.PersistentFlags().BoolP(VerboseFlag, "v", os.Getenv("DEBUG") == "1", "Turns on verbose logging")
 	rootCmd.PersistentFlags().StringVarP(&baseDir, BasedirFlag, "b", filepath.Join(volume.DefaultDockerRootDirectory, PluginAlias), "Mounted volume base directory")
-	viper.BindPFlag("debug", rootCmd.Flags().Lookup(VerboseFlag))
-	
+
 	daemonCmd.Flags().StringVarP(&fuseOpts, FuseFlag, "o", "", "Fuse options to use for gluster mount point") //Other ex  big_writes,use_ino,allow_other,auto_cache,umask=0022
-	daemonCmd.Flags().BoolVar(&mountUniqName, MountUniqNameFlag, false, "Set mountpoint based on definition and not the name of volume")
-	viper.BindPFlag("mount_uniq", daemonCmd.Flags().Lookup(MountUniqNameFlag))
+	daemonCmd.Flags().BoolVar(&mountUniqName, MountUniqNameFlag, os.Getenv("MOUNT_UNIQ") == "1", "Set mountpoint based on definition and not the name of volume")
 }
 
 func setupLogger(cmd *cobra.Command, args []string) {
 	if verbose, _ := cmd.Flags().GetBool(VerboseFlag); verbose {
 		log.SetLevel(log.DebugLevel)
+		log.Debugf("Debug mode on")
 	} else {
 		log.SetLevel(log.InfoLevel)
 	}
