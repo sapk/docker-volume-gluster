@@ -8,9 +8,15 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"regexp"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+)
+
+const (
+	validHostnameRegex = `(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])`
 )
 
 //GlusterPersistence represent struct of persistence file
@@ -50,6 +56,17 @@ func (d *GlusterDriver) SaveConfig() error {
 func (d *GlusterDriver) RunCmd(cmd string) error {
 	log.Debugf(cmd)
 	return exec.Command("sh", "-c", cmd).Run()
+}
+
+func isValidURI(volURI string) bool {
+	re := regexp.MustCompile(validHostnameRegex + ":.+")
+	return re.MatchString(volURI)
+}
+
+func parseVolURI(volURI string) string {
+	volParts := strings.Split(volURI, ":")
+	volServers := strings.Split(volParts[0], ",")
+	return fmt.Sprintf("--volfile-id=%s -s %s", volParts[1], strings.Join(volServers, " -s "))
 }
 
 func getMountName(d *GlusterDriver, r *volume.CreateRequest) string {

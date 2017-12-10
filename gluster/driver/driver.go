@@ -142,12 +142,16 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 //Create create and init the requested volume
 func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
 	log.Debugf("Entering Create: name: %s, options %v", r.Name, r.Options)
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
 
 	if r.Options == nil || r.Options["voluri"] == "" {
 		return fmt.Errorf("voluri option required")
 	}
+	if !isValidURI(r.Options["voluri"]) {
+		return volume.Response{Err: "voluri option is malformated"}
+	}
+
+	d.GetLock().Lock()
+	defer d.GetLock().Unlock()
 
 	v := &GlusterVolume{
 		VolumeURI:   r.Options["voluri"],
@@ -230,9 +234,11 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
 
-	cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.GetRemote(), m.GetPath()) //TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
-	if err := d.RunCmd(cmd); err != nil {
-		return nil, err
+	cmd := fmt.Sprintf("/usr/bin/glusterfs %s %s", parseVolURI(v.GetRemote()), m.Path)
+	//cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.VolumeURI, m.Path)
+	//TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
+	if err := d.runCmd(cmd); err != nil {
+		return volume.Response{Err: err.Error()}
 	}
 
 	common.AddN(1, v, m)
