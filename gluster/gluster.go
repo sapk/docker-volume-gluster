@@ -72,7 +72,7 @@ func Init() {
 	}
 }
 
-//DaemonStart Start the driver deamon
+//DaemonStart Start the deamon
 func DaemonStart(cmd *cobra.Command, args []string) {
 	d := driver.Init(BaseDir, fuseOpts, mountUniqName)
 	log.Debug(d)
