@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/sapk/docker-volume-gluster/common"
@@ -146,6 +147,7 @@ func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
 	if r.Options == nil || r.Options["voluri"] == "" {
 		return fmt.Errorf("voluri option required")
 	}
+	r.Options["voluri"] = strings.Trim(r.Options["voluri"], "\"")
 	if !isValidURI(r.Options["voluri"]) {
 		return fmt.Errorf("voluri option is malformated")
 	}
