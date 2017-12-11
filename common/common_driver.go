@@ -109,12 +109,7 @@ func MountExist(d Driver, vName string) (Volume, Mount, error) {
 	log.Debugf("Entering MountExist: name: %s", vName)
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
-	v, m, err := getVolumeMount(d, vName)
-	if err == nil && v != nil && m != nil && m.GetConnections() > 0 {
-		AddN(1, m, v)
-		return v, m, d.SaveConfig()
-	}
-	return v, m, err
+	return getVolumeMount(d, vName)
 }
 
 func SetN(val int, oList ...increasable) {

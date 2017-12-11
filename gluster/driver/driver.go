@@ -227,7 +227,7 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	if err != nil {
 		return nil, err
 	}
-	if m != nil {
+	if m != nil && m.GetConnections() > 0 {
 		return &volume.MountResponse{Mountpoint: m.GetPath()}, nil
 	}
 
