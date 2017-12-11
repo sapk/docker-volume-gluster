@@ -146,7 +146,7 @@ func TestIntegration(t *testing.T) {
 	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+","+ip2+":test-distributed\"", "distributed-double-server"))
 	time.Sleep(timeInterval)
 	log.Print(cmd("docker", "volume", "ls"))
-	time.Sleep(2 * timeInterval)
+	time.Sleep(3 * timeInterval)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
 	out, err := cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/ls", "/mnt")
@@ -164,7 +164,7 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume : %v", err)
 	}
-	time.Sleep(timeInterval)
+	time.Sleep(3 * timeInterval)
 
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/ls", "/mnt")
 	log.Println(out)
@@ -181,7 +181,7 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume : %v", err)
 	}
-	time.Sleep(timeInterval)
+	time.Sleep(3 * timeInterval)
 
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/ls", "/mnt")
 	log.Println(out)
