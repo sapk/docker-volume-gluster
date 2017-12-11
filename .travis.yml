@@ -16,22 +16,27 @@ before_install:
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
-
+  - sudo mkdir -p /run/docker/plugins
+  
 install:
   - make dev-deps
+  
 script:
   - make lint
   - make build
   - make test
   - ./docker-volume-gluster
+  
 after_success:
   - bash <(curl -s https://codecov.io/bash) -f coverage.all
+  
 before_deploy:
   - make compress
   - docker --version
   - make docker-plugin
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; fi
   - make docker-plugin-push
+  
 deploy:
   provider: releases
   api_key:
