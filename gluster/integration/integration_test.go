@@ -18,7 +18,7 @@ import (
 	"github.com/sapk/docker-volume-gluster/gluster/driver"
 )
 
-const timeInterval = 5 * time.Second
+const timeInterval = 2 * time.Second
 
 func TestMain(m *testing.M) {
 	//TODO check system for gluster, docker and docker-compose (install container version if needed)
@@ -146,18 +146,18 @@ func TestIntegration(t *testing.T) {
 	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+","+ip2+":test-distributed\"", "distributed-double-server"))
 	time.Sleep(timeInterval)
 	log.Print(cmd("docker", "volume", "ls"))
-	time.Sleep(3 * timeInterval)
+	time.Sleep(2 * timeInterval)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/ls", "/mnt"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cat", "/mnt/container"))
-	time.Sleep(3 * timeInterval)
+	time.Sleep(timeInterval)
 
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/ls", "/mnt"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cat", "/mnt/container"))
-	time.Sleep(3 * timeInterval)
+	time.Sleep(timeInterval)
 
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/ls", "/mnt"))
 	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/cat", "/mnt/container"))
