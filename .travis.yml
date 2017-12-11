@@ -16,8 +16,6 @@ before_install:
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
-  - sudo usermod -aG docker $USER
-  - sudo chown -R $USER:docker /run/docker
   
 install:
   - make dev-deps
@@ -25,7 +23,7 @@ install:
 script:
   - make lint
   - make build
-  - sudo -u $USER make test
+  - sudo -E bash -c 'eval "$(gimme)" && make test'
   - ./docker-volume-gluster
   
 after_success:
