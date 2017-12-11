@@ -147,7 +147,7 @@ func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
 		return fmt.Errorf("voluri option required")
 	}
 	if !isValidURI(r.Options["voluri"]) {
-		return volume.Response{Err: "voluri option is malformated"}
+		return fmt.Errorf("voluri option is malformated")
 	}
 
 	d.GetLock().Lock()
@@ -234,11 +234,11 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
 
-	cmd := fmt.Sprintf("/usr/bin/glusterfs %s %s", parseVolURI(v.GetRemote()), m.Path)
+	cmd := fmt.Sprintf("/usr/bin/glusterfs %s %s", parseVolURI(v.GetRemote()), m.GetPath())
 	//cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.VolumeURI, m.Path)
 	//TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
-	if err := d.runCmd(cmd); err != nil {
-		return volume.Response{Err: err.Error()}
+	if err := d.RunCmd(cmd); err != nil {
+		return nil, err
 	}
 
 	common.AddN(1, v, m)

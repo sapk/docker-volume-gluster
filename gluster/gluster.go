@@ -72,7 +72,7 @@ func Init() {
 
 //DaemonStart Start the deamon
 func DaemonStart(cmd *cobra.Command, args []string) {
-	d := driver.Init(baseDir, mountUniqName)
+	d := driver.Init(BaseDir, mountUniqName)
 	log.Debug(d)
 	h := volume.NewHandler(d)
 	log.Debug(h)
