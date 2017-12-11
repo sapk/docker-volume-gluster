@@ -66,7 +66,7 @@ func isValidURI(volURI string) bool {
 func parseVolURI(volURI string) string {
 	volParts := strings.Split(volURI, ":")
 	volServers := strings.Split(volParts[0], ",")
-	return fmt.Sprintf("--volfile-id=%s -s %s", volParts[1], strings.Join(volServers, " -s "))
+	return fmt.Sprintf("--volfile-id='%s' -s '%s'", volParts[1], strings.Join(volServers, "' -s '"))
 }
 
 func getMountName(d *GlusterDriver, r *volume.CreateRequest) string {

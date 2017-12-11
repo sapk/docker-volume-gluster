@@ -242,7 +242,7 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	if err := d.RunCmd(cmd); err != nil {
 		return nil, err
 	}
-
+	//time.Sleep(3 * time.Second)
 	common.AddN(1, v, m)
 	return &volume.MountResponse{Mountpoint: m.GetPath()}, d.SaveConfig()
 }
