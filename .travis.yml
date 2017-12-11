@@ -22,7 +22,7 @@ install:
 script:
   - make lint
   - make build
-  - sudo bash  <(source $HOME/.bashrc; make test)
+  - make test
   - ./docker-volume-gluster
 after_success:
   - bash <(curl -s https://codecov.io/bash) -f coverage.all
