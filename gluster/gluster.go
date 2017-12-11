@@ -14,8 +14,6 @@ import (
 const (
 	//VerboseFlag flag to set more verbose level
 	VerboseFlag = "verbose"
-	//FuseFlag flag to set Fuse mount point options
-	FuseFlag = "fuse-opts"
 	//MountUniqNameFlag flag to set mount point based on definition and not name of volume to not have multile mount of same distant volume
 	MountUniqNameFlag = "mount-uniq"
 	//BasedirFlag flag to set the basedir of mounted volumes
