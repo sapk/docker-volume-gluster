@@ -74,7 +74,8 @@ Usage:
   docker-volume-gluster daemon [flags]
 
 Flags:
-  -o, --fuse-opts string   Fuse options to use moint point (default "big_writes,allow_other,auto_cache")
+  -h, --help         help for daemon
+      --mount-uniq   Set mountpoint based on definition and not the name of volume
 
 Global Flags:
   -b, --basedir string   Mounted volume base directory (default "/var/lib/docker-volumes/gluster")

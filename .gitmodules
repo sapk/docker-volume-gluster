@@ -58,3 +58,6 @@
 [submodule "vendor/gopkg.in/yaml.v2"]
 	path = vendor/gopkg.in/yaml.v2
 	url = https://gopkg.in/yaml.v2
+[submodule "vendor/golang.org/x/crypto"]
+	path = vendor/golang.org/x/crypto
+	url = https://go.googlesource.com/crypto

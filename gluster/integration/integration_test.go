@@ -13,11 +13,12 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/sapk/docker-volume-gluster/gluster"
 	"github.com/sapk/docker-volume-gluster/gluster/driver"
 )
 
-const timeInterval = 5 * time.Second
+const timeInterval = 2 * time.Second
 
 func TestMain(m *testing.M) {
 	//TODO check system for gluster, docker and docker-compose (install container version if needed)
@@ -36,12 +37,16 @@ func TestMain(m *testing.M) {
 }
 
 func setupPlugin() {
-	driver.CfgFolder = "/etc/docker-volumes/gluster-integration"
+	gluster.PluginAlias = "gluster-local-integration"
+	gluster.BaseDir = filepath.Join(volume.DefaultDockerRootDirectory, gluster.PluginAlias)
+	driver.CfgFolder = "/etc/docker-volumes/" + gluster.PluginAlias
 	log.Print(cmd("rm", "-rf", driver.CfgFolder))
 	log.SetLevel(log.DebugLevel)
+
 	gluster.DaemonStart(nil, []string{})
 	time.Sleep(timeInterval)
-	log.Print(cmd("docker", "plugin", "ls"))
+	//log.Print(cmd("docker", "plugin", "ls"))
+	log.Print(cmd("docker", "info", "-f", "{{.Plugins.Volume}}"))
 }
 
 func setupGlusterCluster() {
@@ -89,7 +94,7 @@ func setupGlusterCluster() {
 func cleanGlusterCluster() {
 	pwd := currentPWD()
 	log.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "down"))
-	log.Print(cmd("docker", "volume", "rm", "-f", "distributed", "replica"))
+	log.Print(cmd("docker", "volume", "rm", "-f", "distributed", "replica", "distributed-double-server", "replica-double-server"))
 	log.Print(cmd("docker", "volume", "prune", "-f"))
 	//TODO log.Print(cmd("docker", "system", "prune", "-af"))
 }
@@ -129,16 +134,75 @@ func TestIntegration(t *testing.T) {
 	log.Print("CIDs : ", containers)
 	ip := getContainerIP(containers[0])
 	log.Print("IP node-1 : ", ip)
+	ip2 := getContainerIP(containers[1])
+	log.Print("IP node-2 : ", ip2)
 
-	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-replica\"", "replica"))
+	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+":test-replica\"", "replica"))
 	time.Sleep(timeInterval)
-	log.Print(cmd("docker", "volume", "create", "--driver", "gluster", "--opt", "voluri=\""+ip+":test-distributed\"", "distributed"))
+	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+":test-distributed\"", "distributed"))
+	time.Sleep(timeInterval)
+	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+","+ip2+":test-replica\"", "replica-double-server"))
+	time.Sleep(timeInterval)
+	log.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+ip+","+ip2+":test-distributed\"", "distributed-double-server"))
 	time.Sleep(timeInterval)
 	log.Print(cmd("docker", "volume", "ls"))
 	time.Sleep(3 * timeInterval)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
-	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
+	out, err := cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/ls", "/mnt")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to list mounted volume : %v", err)
+	}
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to write inside mounted volume : %v", err)
+	}
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cat", "/mnt/container")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to read from mounted volume : %v", err)
+	}
 	time.Sleep(3 * timeInterval)
-	log.Print(cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/sh", "-c", "'date | tee /mnt/test'"))
+
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/ls", "/mnt")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to list mounted volume : %v", err)
+	}
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to write inside mounted volume : %v", err)
+	}
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cat", "/mnt/container")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to read from mounted volume : %v", err)
+	}
+	time.Sleep(3 * timeInterval)
+
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/ls", "/mnt")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to list mounted volume (with fallback) : %v", err)
+	}
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/cat", "/mnt/container")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to read from mounted volume (with fallback) : %v", err)
+	}
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed-double-server:/mnt", "alpine", "/bin/ls", "/mnt")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to list mounted volume (with fallback) : %v", err)
+	}
+	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed-double-server:/mnt", "alpine", "/bin/cat", "/mnt/container")
+	log.Println(out)
+	if err != nil {
+		t.Errorf("Failed to read from mounted volume (with fallback) : %v", err)
+	}
+	//TODO check that container is same as before
+
 }

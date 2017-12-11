@@ -10,22 +10,22 @@ go:
   - 1.8
   - 1.9
   - tip
-  
+
 before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
-  
+
 install:
   - make dev-deps
 script:
   - make lint
   - make build
-  - make test
+  - sudo bash  <(source $HOME/.bashrc; make test)
   - ./docker-volume-gluster
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash) -f coverage.all
 before_deploy:
   - make compress
   - docker --version

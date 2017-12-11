@@ -136,8 +136,8 @@ test: dev-deps deps format
 	go vet ./gluster/... || true
 	go test -v -race -coverprofile=coverage.unit.out -covermode=atomic ./gluster/driver
 	go test -v -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
-	gocovmerge `ls coverage.*.out` > coverage.out
-	go tool cover -html=coverage.out -o coverage.html
+	gocovmerge coverage.unit.out coverage.inte.out > coverage.all
+	go tool cover -html=coverage.all -o coverage.html
 
 docs:
 	@echo -e "$(OK_COLOR)==> Serving docs at http://localhost:$(DOC_PORT).$(NO_COLOR)"
