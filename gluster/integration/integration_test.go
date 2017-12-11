@@ -109,7 +109,8 @@ func currentPWD() string {
 func getGlusterClusterContainers() []string {
 	pwd := currentPWD()
 	list, _ := cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "ps", "-q")
-	return strings.Split(list, "\n")
+	l := strings.Split(list, "\n")
+	return l[:len(l)-1]
 }
 
 func getContainerIP(cid string) string {
