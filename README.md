@@ -89,6 +89,10 @@ docker run -v test:/mnt --rm -ti ubuntu
 ```
 
 
+
+## Performances : 
+As tested [here](https://github.com/sapk/docker-volume-gluster/issues/10#issuecomment-350126471), this plugin provide same performances as a gluster volume mounted on host via docker bind mount.
+
 ## Inspired from :
  - https://github.com/ContainX/docker-volume-netshare/
  - https://github.com/vieux/docker-volume-sshfs/
