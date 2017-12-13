@@ -131,13 +131,19 @@ format:
 	@echo -e "$(OK_COLOR)==> Formatting...$(NO_COLOR)"
 	go fmt ./gluster/...
 
-test: dev-deps deps format
-	@echo -e "$(OK_COLOR)==> Running tests...$(NO_COLOR)"
-	go vet ./gluster/... || true
-	go test -v -race -coverprofile=coverage.unit.out -covermode=atomic ./gluster/driver
-	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
+test: test-unit test-integration
+	@echo -e "$(OK_COLOR)==> Running test...$(NO_COLOR)"
 	gocovmerge coverage.unit.out coverage.inte.out > coverage.all
 #	go tool cover -html=coverage.all -o coverage.html
+
+test-unit: dev-deps deps format
+	@echo -e "$(OK_COLOR)==> Running unit tests...$(NO_COLOR)"
+	go vet ./gluster/... || true
+	go test -v -race -coverprofile=coverage.unit.out -covermode=atomic ./gluster/driver
+
+test-integration: dev-deps deps format
+	@echo -e "$(OK_COLOR)==> Running integration tests...$(NO_COLOR)"
+	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
 
 docs:
 	@echo -e "$(OK_COLOR)==> Serving docs at http://localhost:$(DOC_PORT).$(NO_COLOR)"
