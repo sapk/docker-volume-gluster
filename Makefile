@@ -115,7 +115,7 @@ release: clean set-build deps format
 #	@upx --brute  build/${APP_NAME}-win-amd64 || upx-ucl --brute  build/${APP_NAME}-win-amd64 || echo -e "$(WARN_COLOR)==> No tools found to compress binary.$(NO_COLOR)"
 
 	@echo -e "$(OK_COLOR)==> Archiving ...$(NO_COLOR)"
-	@tar -zcvf build/$(ARCHIVE) LICENSE README.md build/
+	@tar -zcvf build/$(ARCHIVE) LICENSE README.md build/$(APP_NAME)-*
 
 clean:
 	@if [ -x $(APP_NAME) ]; then rm $(APP_NAME); fi
