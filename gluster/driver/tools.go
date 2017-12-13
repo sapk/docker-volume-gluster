@@ -55,7 +55,7 @@ func (d *GlusterDriver) SaveConfig() error {
 //RunCmd run deamon in context of this gvfs drive with custome env
 func (d *GlusterDriver) RunCmd(cmd string) error {
 	log.Debugf(cmd)
-	out, err := exec.Command("sh", "-c", cmd).Output()
+	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	log.Debugf("Output: %s", out)
 	return err
 }
