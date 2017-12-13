@@ -25,10 +25,9 @@ install:
 script:
   - make lint
   - make build
-  - ls -lah /var/log/glusterfs/ 
-  - sudo chmod 777 /var/log/glusterfs
-  - glusterfs --volfile-id='test-replica' -s '172.18.0.3' /var/lib/docker-volumes/gluster-local-integration/replica
   - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" && make test'
+  - sudo ls -lah /var/log/glusterfs/
+  - sudo cat /var/log/glusterfs/*
   - ./docker-volume-gluster
   
 after_success:
