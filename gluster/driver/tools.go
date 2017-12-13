@@ -57,9 +57,9 @@ func (d *GlusterDriver) RunCmd(cmd string) error {
 	log.Debugf(cmd)
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
-		log.Debugf("Error: %v", err)
+		log.Warnf("Error: %s", err)
 	}
-	log.Debugf("Output: %v", out)
+	log.Debugf("Output: %s", out)
 	return err
 }
 
