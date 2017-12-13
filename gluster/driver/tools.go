@@ -56,7 +56,10 @@ func (d *GlusterDriver) SaveConfig() error {
 func (d *GlusterDriver) RunCmd(cmd string) error {
 	log.Debugf(cmd)
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
-	log.Debugf("Output: %s", out)
+	if err != nil {
+		log.Debugf("Error: %v", err)
+	}
+	log.Debugf("Output: %v", out)
 	return err
 }
 
