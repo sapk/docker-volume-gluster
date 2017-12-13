@@ -135,9 +135,9 @@ test: dev-deps deps format
 	@echo -e "$(OK_COLOR)==> Running tests...$(NO_COLOR)"
 	go vet ./gluster/... || true
 	go test -v -race -coverprofile=coverage.unit.out -covermode=atomic ./gluster/driver
-	go test -v -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
+	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
 	gocovmerge coverage.unit.out coverage.inte.out > coverage.all
-	go tool cover -html=coverage.all -o coverage.html
+#	go tool cover -html=coverage.all -o coverage.html
 
 docs:
 	@echo -e "$(OK_COLOR)==> Serving docs at http://localhost:$(DOC_PORT).$(NO_COLOR)"
