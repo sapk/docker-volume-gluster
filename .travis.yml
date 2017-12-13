@@ -35,7 +35,6 @@ script:
 #  - make test-coverage
 
 before_deploy:
-  - make compress
   - make release
   - docker --version
   - make docker-plugin
@@ -48,7 +47,6 @@ deploy:
     secure: SAD6luuJhgzS7ZavymCxLaTlCbxp9VQax0uf4ozWByt0uwsLKtDM4Je4c9z9bx40PmEBKOpSoso4umL4AcY1yrQ2UTMJD+GxedmqDnge2ibfhHZMTxeDkLF3JLsACfQmibNzN/+b9nNdgyzQYnB4+OvKOmEvtHWwNP7qOuU+9QTNK/rNt5MBXk29aJFL1/t3oIvCfHl1D96pssE6uVURcXiPGkgNcSLBUewYwPwqjGqgG/xu/lgQEwpW6AE4OfwJLpdGMR/V1DUNMNs47Gt7Vh+PBRm/M7cZUYyc+CRuXuSM+PKr9xlH8mFHu6IrcM4n5Sy94A7ldB5dfn9HA+WLXEOhSej3NB06sFkjITnKSWCVCGVzzXuH5CMiwBDRKmhFLunFe9Wcz52W2wIumesaNuZOm9LbiBV47UicggeiZkhar1tvjQoFgw6R57+Wxdhdon7fwVO3euRSH7fm0RyEN1PgO92U5/gHgOO+Khlsl3GPqWNgyqeh0Ej4Ke9mFB0VjO+a8uNAQlrp+v94kQSWqpXUD30/fnZhu+sBURJ1pikH/WAhcnKEvYk7Kq5/kSuYqO0dxxEDrHh00Gwo/uHhhnOp3BNe/v1/TseSS4FOxaLrbTKCDRU+B38bsi8FoZ7J68xK9dT19TF+6ZXqka1LNIyV4ITCjkRenHMfCWWrF78=
   file_glob: true
   file:
-    - "./docker-volume-gluster"
     - build/*.tar.gz
   skip_cleanup: true
   on:
