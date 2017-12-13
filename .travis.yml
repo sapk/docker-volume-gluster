@@ -36,7 +36,7 @@ after_success:
 
 before_deploy:
   - make compress
-  - make releases
+  - make release
   - docker --version
   - make docker-plugin
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; fi
