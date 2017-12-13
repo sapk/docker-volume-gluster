@@ -25,7 +25,6 @@ install:
 script:
   - make lint
   - make build
-  - env
   - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" && make test'
   - ./docker-volume-gluster
   
