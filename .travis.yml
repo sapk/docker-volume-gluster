@@ -23,6 +23,7 @@ install:
 script:
   - make lint
   - make build
+  - env
   - sudo -E bash -c 'eval "$(gimme 1.9)" && make test'
   - ./docker-volume-gluster
   
