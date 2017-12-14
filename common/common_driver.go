@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 
@@ -17,7 +18,7 @@ type Driver interface {
 	GetVolumes() map[string]Volume
 	GetMounts() map[string]Mount
 	SaveConfig() error
-	RunCmd(string) error
+	StartCmd(string) (*exec.Cmd, error)
 }
 
 //Volume needed interface for some commons interactions
@@ -136,8 +137,12 @@ func Unmount(d Driver, vName string) error {
 	}
 
 	if m.GetConnections() <= 1 {
-		cmd := fmt.Sprintf("/usr/bin/umount %s", m.GetPath())
-		if err := d.RunCmd(cmd); err != nil {
+		c, err := d.StartCmd(fmt.Sprintf("/usr/bin/umount %s", m.GetPath()))
+		if err != nil {
+			return err
+		}
+		err = c.Wait()
+		if err != nil {
 			return err
 		}
 		SetN(0, m, v)

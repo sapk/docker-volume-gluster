@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -51,18 +52,14 @@ func (d *GlusterDriver) SaveConfig() error {
 	return nil
 }
 
-/*
-//RunCmd run deamon in context of this gvfs drive with custome env
-func (d *GlusterDriver) RunCmd(cmd string) error {
+//StartCmd start deamon in context of this gluster driver and keep it in backgroud
+func (d *GlusterDriver) StartCmd(cmd string) (*exec.Cmd, error) {
 	log.Debugf(cmd)
-	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
-	if err != nil {
-		log.Warnf("Error: %s", err)
-	}
-	log.Debugf("Output: %s", out)
-	return err
+	c := exec.Command(cmd)
+	c.Stdout = d.logOut
+	c.Stderr = d.logErr
+	return c, c.Start()
 }
-*/
 
 func isValidURI(volURI string) bool {
 	re := regexp.MustCompile(validHostnameRegex + ":.+")

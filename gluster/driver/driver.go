@@ -106,7 +106,7 @@ func (d *GlusterDriver) GetLock() *sync.RWMutex {
 //Init start all needed deps and serve response to API call
 func Init(root string, mountUniqName bool) *GlusterDriver {
 	log.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
-	logger := log.New()
+	logger := log.New() //TODO defer close writer
 	d := &GlusterDriver{
 		root:          root,
 		mountUniqName: mountUniqName,
@@ -244,10 +244,12 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
 
-	cmd := fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetRemote()), m.GetPath())
-	//cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.VolumeURI, m.Path)
-	//TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
-	if err := d.RunCmd(cmd); err != nil {
+	c, err := d.StartCmd(fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetRemote()), m.GetPath()))
+	if err != nil {
+		return nil, err
+	}
+	err = c.Wait() //TODO start glusterfs in foreground wait a minimum of time of no failure
+	if err != nil {
 		return nil, err
 	}
 	//time.Sleep(3 * time.Second)
