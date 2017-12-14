@@ -2,7 +2,9 @@ package driver
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -24,8 +26,9 @@ var (
 )
 
 type GlusterMountpoint struct {
-	Path        string `json:"path"`
-	Connections int    `json:"connections"`
+	Path        string    `json:"path"`
+	Connections int       `json:"connections"`
+	Process     *exec.Cmd `json:"-"`
 }
 
 func (d *GlusterMountpoint) GetPath() string {
@@ -76,6 +79,8 @@ type GlusterDriver struct {
 	persitence    *viper.Viper
 	volumes       map[string]*GlusterVolume
 	mounts        map[string]*GlusterMountpoint
+	logOut        *io.PipeWriter
+	logErr        *io.PipeWriter
 }
 
 func (d *GlusterDriver) GetVolumes() map[string]common.Volume {
@@ -101,12 +106,15 @@ func (d *GlusterDriver) GetLock() *sync.RWMutex {
 //Init start all needed deps and serve response to API call
 func Init(root string, mountUniqName bool) *GlusterDriver {
 	log.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
+	logger := log.New()
 	d := &GlusterDriver{
 		root:          root,
 		mountUniqName: mountUniqName,
 		persitence:    viper.New(),
 		volumes:       make(map[string]*GlusterVolume),
 		mounts:        make(map[string]*GlusterMountpoint),
+		logOut:        logger.WriterLevel(log.DebugLevel),
+		logErr:        logger.WriterLevel(log.ErrorLevel),
 	}
 
 	d.persitence.SetDefault("volumes", map[string]*GlusterVolume{})
