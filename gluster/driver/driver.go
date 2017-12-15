@@ -12,8 +12,8 @@ import (
 
 	"github.com/sapk/docker-volume-gluster/common"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -268,7 +268,7 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	select {
 	case err := <-done:
 		return nil, err
-	case <-time.After(time.Second * 15):
+	case <-time.After(time.Second * 5):
 		m.SetProcess(c)
 		common.AddN(1, v, m)
 		return &volume.MountResponse{Mountpoint: m.GetPath()}, d.SaveConfig()

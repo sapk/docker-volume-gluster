@@ -185,7 +185,7 @@ deps:
 
 update-deps: dev-deps
 	@echo -e "$(OK_COLOR)==> Updating all dependencies ...$(NO_COLOR)"
-	$(GOPATH)/bin/vendetta -n $(APP_PACKAGE) -u
+	$(GOPATH)/bin/vendetta -n $(APP_PACKAGE) -u -p
 #@go get -d -v -u ./...
 
 
