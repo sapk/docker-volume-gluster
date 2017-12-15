@@ -31,13 +31,13 @@ func (d *GlusterDriver) SaveConfig() error {
 	fi, err := os.Lstat(CfgFolder)
 	if os.IsNotExist(err) {
 		if err = os.MkdirAll(CfgFolder, 0700); err != nil {
-			return err
+			return fmt.Errorf("SaveConfig: %s", err)
 		}
 	} else if err != nil {
-		return err
+		return fmt.Errorf("SaveConfig: %s", err)
 	}
 	if fi != nil && !fi.IsDir() {
-		return fmt.Errorf("%v already exist and it's not a directory", d.root)
+		return fmt.Errorf("SaveConfig: %v already exist and it's not a directory", d.root)
 	}
 	b, err := json.Marshal(GlusterPersistence{Version: CfgVersion, Volumes: d.volumes, Mounts: d.mounts})
 	if err != nil {
@@ -47,9 +47,9 @@ func (d *GlusterDriver) SaveConfig() error {
 	err = ioutil.WriteFile(CfgFolder+"/persistence.json", b, 0600)
 	if err != nil {
 		log.Warn("Unable to write persistence struct, %v", err)
+		return fmt.Errorf("SaveConfig: %s", err)
 	}
-	//TODO display error messages
-	return err
+	return nil
 }
 
 //RunCmd run deamon in context of this gvfs drive with custome env
