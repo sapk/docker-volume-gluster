@@ -156,8 +156,8 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to write inside mounted volume : %v", err)
 	}
-	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cat", "/mnt/container")
-	log.Println(out)
+	outReplicaContainer, err := cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cat", "/mnt/container")
+	log.Println(outReplicaContainer)
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume : %v", err)
 	}
@@ -173,8 +173,8 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to write inside mounted volume : %v", err)
 	}
-	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cat", "/mnt/container")
-	log.Println(out)
+	outDistributedContainer, err := cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cat", "/mnt/container")
+	log.Println(outDistributedContainer)
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume : %v", err)
 	}
@@ -190,6 +190,10 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume (with fallback) : %v", err)
 	}
+	if outReplicaContainer != out {
+		t.Errorf("Content inside gluster replica volume in not the same : %s != %s", outReplicaContainer, out)
+	}
+
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed-double-server:/mnt", "alpine", "/bin/ls", "/mnt")
 	log.Println(out)
 	if err != nil {
@@ -199,6 +203,9 @@ func TestIntegration(t *testing.T) {
 	log.Println(out)
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume (with fallback) : %v", err)
+	}
+	if outDistributedContainer != out {
+		t.Errorf("Content inside gluster distributed volume in not the same : %s != %s", outDistributedContainer, out)
 	}
 	//TODO check that container is same as before
 
