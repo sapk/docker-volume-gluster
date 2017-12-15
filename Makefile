@@ -145,6 +145,12 @@ test-integration: dev-deps deps format
 	@echo -e "$(OK_COLOR)==> Running integration tests...$(NO_COLOR)"
 	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
 
+test-coverage: test
+	@echo -e "$(OK_COLOR)==> Uploading coverage ...$(NO_COLOR)"
+	curl -s https://codecov.io/bash | bash -s - -F unittests -f coverage.unit.out
+	curl -s https://codecov.io/bash | bash -s - -F integration -f coverage.inte.out
+#Need CODECOV_TOKEN=:uuid
+
 docs:
 	@echo -e "$(OK_COLOR)==> Serving docs at http://localhost:$(DOC_PORT).$(NO_COLOR)"
 	@godoc -http=:$(DOC_PORT)
