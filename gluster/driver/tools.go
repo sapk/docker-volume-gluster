@@ -53,9 +53,9 @@ func (d *GlusterDriver) SaveConfig() error {
 }
 
 //StartCmd start deamon in context of this gluster driver and keep it in backgroud
-func (d *GlusterDriver) StartCmd(cmd string) (*exec.Cmd, error) {
-	log.Debugf(cmd)
-	c := exec.Command(cmd)
+func (d *GlusterDriver) StartCmd(bin string, arg ...string) (*exec.Cmd, error) {
+	log.Debugf("%s %s", bin, strings.Join(arg, " "))
+	c := exec.Command(bin, arg...)
 	c.Stdout = d.logOut
 	c.Stderr = d.logErr
 	return c, c.Start()
@@ -66,10 +66,15 @@ func isValidURI(volURI string) bool {
 	return re.MatchString(volURI)
 }
 
-func parseVolURI(volURI string) string {
+func parseVolURI(volURI string) []string {
 	volParts := strings.Split(volURI, ":")
 	volServers := strings.Split(volParts[0], ",")
-	return fmt.Sprintf("--volfile-id='%s' -s '%s'", volParts[1], strings.Join(volServers, "' -s '"))
+	ret := make([]string, 1+len(volServers))
+	ret[0] = fmt.Sprintf("--volfile-id=%s", volParts[1])
+	for i, server := range volServers {
+		ret[i+1] = fmt.Sprintf("--volfile-server=%s", server)
+	}
+	return ret
 }
 
 func getMountName(d *GlusterDriver, r *volume.CreateRequest) string {

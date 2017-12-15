@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/sapk/docker-volume-gluster/common"
 
@@ -33,6 +34,9 @@ type GlusterMountpoint struct {
 
 func (d *GlusterMountpoint) GetPath() string {
 	return d.Path
+}
+func (d *GlusterMountpoint) SetProcess(c *exec.Cmd) {
+	d.Process = c
 }
 
 func (d *GlusterMountpoint) GetConnections() int {
@@ -75,6 +79,7 @@ func (v *GlusterVolume) GetStatus() map[string]interface{} {
 type GlusterDriver struct {
 	lock          sync.RWMutex
 	root          string
+	binary        string
 	mountUniqName bool
 	persitence    *viper.Viper
 	volumes       map[string]*GlusterVolume
@@ -107,8 +112,14 @@ func (d *GlusterDriver) GetLock() *sync.RWMutex {
 func Init(root string, mountUniqName bool) *GlusterDriver {
 	log.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
 	logger := log.New() //TODO defer close writer
+	path, err := exec.LookPath("glusterfs")
+	if err != nil {
+		log.Fatal("glusterfs binary not found")
+	}
+
 	d := &GlusterDriver{
 		root:          root,
+		binary:        path,
 		mountUniqName: mountUniqName,
 		persitence:    viper.New(),
 		volumes:       make(map[string]*GlusterVolume),
@@ -244,17 +255,24 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
 
-	c, err := d.StartCmd(fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetRemote()), m.GetPath()))
+	c, err := d.StartCmd(d.binary, append(parseVolURI(v.GetRemote()), "--no-daemon", m.GetPath())...) // TODO --debug
 	if err != nil {
 		return nil, err
 	}
-	err = c.Wait() //TODO start glusterfs in foreground wait a minimum of time of no failure
-	if err != nil {
+
+	done := make(chan error, 1)
+	go func() {
+		done <- c.Wait()
+	}()
+	// Wait if failed for 15 seconds
+	select {
+	case err := <-done:
 		return nil, err
+	case <-time.After(time.Second * 15):
+		m.SetProcess(c)
+		common.AddN(1, v, m)
+		return &volume.MountResponse{Mountpoint: m.GetPath()}, d.SaveConfig()
 	}
-	//time.Sleep(3 * time.Second)
-	common.AddN(1, v, m)
-	return &volume.MountResponse{Mountpoint: m.GetPath()}, d.SaveConfig()
 }
 
 //Unmount unmount the requested volume

@@ -18,7 +18,7 @@ type Driver interface {
 	GetVolumes() map[string]Volume
 	GetMounts() map[string]Mount
 	SaveConfig() error
-	StartCmd(string) (*exec.Cmd, error)
+	StartCmd(name string, arg ...string) (*exec.Cmd, error)
 }
 
 //Volume needed interface for some commons interactions
@@ -33,6 +33,8 @@ type Volume interface {
 type Mount interface {
 	increasable
 	GetPath() string
+	//GetProcess() *exec.Cmd
+	SetProcess(*exec.Cmd)
 }
 
 type increasable interface {
@@ -137,7 +139,7 @@ func Unmount(d Driver, vName string) error {
 	}
 
 	if m.GetConnections() <= 1 {
-		c, err := d.StartCmd(fmt.Sprintf("/usr/bin/umount %s", m.GetPath()))
+		c, err := d.StartCmd("/usr/bin/umount", m.GetPath())
 		if err != nil {
 			return err
 		}
