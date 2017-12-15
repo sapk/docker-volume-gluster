@@ -264,7 +264,7 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	go func() {
 		done <- c.Wait()
 	}()
-	// Wait if failed for 15 seconds
+	// Wait if failed for 5 seconds
 	select {
 	case err := <-done:
 		return nil, err
