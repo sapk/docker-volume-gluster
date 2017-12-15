@@ -207,6 +207,6 @@ func TestIntegration(t *testing.T) {
 	if outDistributedContainer != out {
 		t.Errorf("Content inside gluster distributed volume in not the same : %s != %s", outDistributedContainer, out)
 	}
-	//TODO check that container is same as before
+	//TODO check persistence
 
 }
