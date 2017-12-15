@@ -94,7 +94,7 @@ func Remove(d Driver, vName string) error {
 	}
 	if v.GetConnections() == 0 {
 		if m.GetConnections() == 0 {
-			if err := os.Remove(m.GetPath()); err != nil && strings.Contains(err.Error(), "no such file or directory") {
+			if err := os.Remove(m.GetPath()); err != nil && !strings.Contains(err.Error(), "no such file or directory") {
 				return err
 			}
 			delete(d.GetMounts(), v.GetMount())
