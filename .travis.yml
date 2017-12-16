@@ -25,7 +25,7 @@ install:
 script:
   - make lint
   - make build
-  - make test-coverage
+  - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" &&  make test-coverage'
 #  - make test-unit
 #  - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" && make test'
 #  - sudo ls -lah /var/log/glusterfs/
