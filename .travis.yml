@@ -37,8 +37,8 @@ script:
   - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" &&  make test-coverage'
 #  - make test-unit
 #  - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" && make test'
-#  - sudo ls -lah /var/log/glusterfs/
-#  - sudo cat /var/log/glusterfs/*
+  - sudo ls -lah /var/log/glusterfs/
+  - sudo cat /var/log/glusterfs/*
   - ./docker-volume-gluster
 
 #after_success:
