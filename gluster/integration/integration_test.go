@@ -154,16 +154,19 @@ func TestIntegration(t *testing.T) {
 	time.Sleep(3 * timeInterval)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
+	time.Sleep(timeInterval)
 	out, err := runWithVolume("replica", "/bin/ls /mnt")
 	log.Println(out)
 	if err != nil {
 		t.Errorf("Failed to list mounted volume : %v", err)
 	}
+	time.Sleep(timeInterval)
 	out, err = runWithVolume("replica", "/bin/cp /etc/hostname /mnt/container")
 	log.Println(out)
 	if err != nil {
 		t.Errorf("Failed to write inside mounted volume : %v", err)
 	}
+	time.Sleep(timeInterval)
 	outReplicaContainer, err := runWithVolume("replica", "/bin/cat /mnt/container")
 	log.Println(outReplicaContainer)
 	if err != nil {
@@ -176,11 +179,13 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to list mounted volume : %v", err)
 	}
+	time.Sleep(timeInterval)
 	out, err = runWithVolume("distributed", "/bin/cp /etc/hostname /mnt/container")
 	log.Println(out)
 	if err != nil {
 		t.Errorf("Failed to write inside mounted volume : %v", err)
 	}
+	time.Sleep(timeInterval)
 	outDistributedContainer, err := runWithVolume("distributed", "/bin/cat /mnt/container")
 	log.Println(outDistributedContainer)
 	if err != nil {
@@ -193,6 +198,7 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to list mounted volume (with fallback) : %v", err)
 	}
+	time.Sleep(timeInterval)
 	out, err = runWithVolume("replica-double-server", "/bin/cat /mnt/container")
 	log.Println(out)
 	if err != nil {
@@ -202,11 +208,13 @@ func TestIntegration(t *testing.T) {
 		t.Errorf("Content inside gluster replica volume in not the same : %s != %s", outReplicaContainer, out)
 	}
 
+	time.Sleep(timeInterval)
 	out, err = runWithVolume("distributed-double-server", "/bin/ls /mnt")
 	log.Println(out)
 	if err != nil {
 		t.Errorf("Failed to list mounted volume (with fallback) : %v", err)
 	}
+	time.Sleep(timeInterval)
 	out, err = runWithVolume("distributed-double-server", "/bin/cat /mnt/container")
 	log.Println(out)
 	if err != nil {
