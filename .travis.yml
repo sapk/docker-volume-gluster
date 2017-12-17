@@ -36,6 +36,7 @@ before_install:
 #  - rm *.deb
   - sudo apt-get -y install glusterfs-client
   - sudo apt-get -y install docker-ce
+  - sudo apt-get -y install attr python-jwt
   - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
   - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
   - sudo dpkg -i glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
