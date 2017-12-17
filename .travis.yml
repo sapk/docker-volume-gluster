@@ -12,22 +12,23 @@ go:
   - tip
 
 before_install:
-  - curl -fsSL https://download.gluster.org/pub/gluster/glusterfs/3.12/rsa.pub | sudo apt-key add -
-  - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
-  - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
-  - sudo dpkg -i glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
-  - sudo dpkg -i glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
-  - rm *.deb
 #  - sudo add-apt-repository -y ppa:gluster/glusterfs-3.12
 #  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 #  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get install -qq pkg-config fuse
   - sudo modprobe fuse
-#  - sudo mknod -m 666 /dev/fuse c 10 229
   - sudo chmod 666 /dev/fuse
-#  - sudo apt-get -y install docker-ce glusterfs-client
-  - sudo apt-get -y install glusterfs-client
+#  - sudo mknod -m 666 /dev/fuse c 10 229
+  - curl -fsSL https://download.gluster.org/pub/gluster/glusterfs/3.12/rsa.pub | sudo apt-key add -
+  - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
+  - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
+  - sudo apt-get -y install libibverbs1 liblvm2app2.2 librdmacm1 liburcu4 attr python-jwt
+  - sudo dpkg -i glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
+  - sudo dpkg -i glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
+  - rm *.deb
+#  - sudo apt-get -y install glusterfs-client
+#  - sudo apt-get -y install docker-ce
   - sudo -E apt-get -q -y --purge remove docker-ce
   - sudo -E apt-cache policy docker-ce
   - curl -sSL https://get.docker.com/ | sh
