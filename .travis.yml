@@ -23,11 +23,13 @@ before_install:
   - curl -fsSL https://download.gluster.org/pub/gluster/glusterfs/3.12/rsa.pub | sudo apt-key add -
   - wget http://fr.archive.ubuntu.com/ubuntu/pool/universe/libu/liburcu/liburcu4_0.9.1-3_amd64.deb
   - wget http://security.ubuntu.com/ubuntu/pool/main/p/pyjwt/python-jwt_1.3.0-1ubuntu0.1_all.deb
+  - wget http://fr.archive.ubuntu.com/ubuntu/pool/main/l/lvm2/liblvm2app2.2_2.02.133-1ubuntu10_amd64.deb
   - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
   - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
   - sudo apt-get -y install libibverbs1 liblvm2app2.2 librdmacm1 attr
   - sudo dpkg -i liburcu4_0.9.1-3_amd64.deb
   - sudo dpkg -i python-jwt_1.3.0-1ubuntu0.1_all.deb
+  - sudo dpkg -i liblvm2app2.2_2.02.133-1ubuntu10_amd64.deb
   - sudo dpkg -i glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
   - sudo dpkg -i glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
   - rm *.deb
