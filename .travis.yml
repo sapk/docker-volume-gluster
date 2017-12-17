@@ -12,13 +12,15 @@ go:
   - tip
 
 before_install:
+#  - curl -fsSL https://download.gluster.org/pub/gluster/glusterfs/3.12/rsa.pub | apt-key add -
+  - sudo add-apt-repository ppa:gluster/glusterfs-3.12
 #  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 #  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get install -qq pkg-config fuse
   - sudo modprobe fuse
-  - sudo mknod -m 666 /dev/fuse c 10 229
-#  - sudo chmod 666 /dev/fuse
+#  - sudo mknod -m 666 /dev/fuse c 10 229
+  - sudo chmod 666 /dev/fuse
 #  - sudo apt-get -y install docker-ce glusterfs-client
   - sudo apt-get -y install glusterfs-client
   - sudo -E apt-get -q -y --purge remove docker-ce
