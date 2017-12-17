@@ -2,15 +2,18 @@ package driver
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/sapk/docker-volume-gluster/common"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -24,12 +27,16 @@ var (
 )
 
 type GlusterMountpoint struct {
-	Path        string `json:"path"`
-	Connections int    `json:"connections"`
+	Path        string    `json:"path"`
+	Connections int       `json:"connections"`
+	Process     *exec.Cmd `json:"-"`
 }
 
 func (d *GlusterMountpoint) GetPath() string {
 	return d.Path
+}
+func (d *GlusterMountpoint) SetProcess(c *exec.Cmd) {
+	d.Process = c
 }
 
 func (d *GlusterMountpoint) GetConnections() int {
@@ -72,10 +79,13 @@ func (v *GlusterVolume) GetStatus() map[string]interface{} {
 type GlusterDriver struct {
 	lock          sync.RWMutex
 	root          string
+	binary        string
 	mountUniqName bool
 	persitence    *viper.Viper
 	volumes       map[string]*GlusterVolume
 	mounts        map[string]*GlusterMountpoint
+	logOut        *io.PipeWriter
+	logErr        *io.PipeWriter
 }
 
 func (d *GlusterDriver) GetVolumes() map[string]common.Volume {
@@ -101,12 +111,21 @@ func (d *GlusterDriver) GetLock() *sync.RWMutex {
 //Init start all needed deps and serve response to API call
 func Init(root string, mountUniqName bool) *GlusterDriver {
 	log.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
+	logger := log.New() //TODO defer close writer
+	path, err := exec.LookPath("glusterfs")
+	if err != nil {
+		log.Fatal("glusterfs binary not found")
+	}
+
 	d := &GlusterDriver{
 		root:          root,
+		binary:        path,
 		mountUniqName: mountUniqName,
 		persitence:    viper.New(),
 		volumes:       make(map[string]*GlusterVolume),
 		mounts:        make(map[string]*GlusterMountpoint),
+		logOut:        logger.WriterLevel(log.DebugLevel),
+		logErr:        logger.WriterLevel(log.ErrorLevel),
 	}
 
 	d.persitence.SetDefault("volumes", map[string]*GlusterVolume{})
@@ -236,15 +255,26 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
 
-	cmd := fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetRemote()), m.GetPath())
-	//cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.VolumeURI, m.Path)
-	//TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
-	if err := d.RunCmd(cmd); err != nil {
+	//c, err := d.StartCmd(d.binary, append(parseVolURI(v.GetRemote()), "--log-level", "INFO", "--log-file", "/dev/stdout", "--no-daemon", m.GetPath())...) // TODO --debug
+	c, err := d.StartCmd(d.binary, append(parseVolURI(v.GetRemote()), "--no-daemon", m.GetPath())...) // TODO --debug
+
+	if err != nil {
 		return nil, err
 	}
-	//time.Sleep(3 * time.Second)
-	common.AddN(1, v, m)
-	return &volume.MountResponse{Mountpoint: m.GetPath()}, d.SaveConfig()
+
+	done := make(chan error, 1)
+	go func() {
+		done <- c.Wait()
+	}()
+	// Wait if failed for 5 seconds
+	select {
+	case err := <-done:
+		return nil, err
+	case <-time.After(time.Second * 5):
+		m.SetProcess(c)
+		common.AddN(1, v, m)
+		return &volume.MountResponse{Mountpoint: m.GetPath()}, d.SaveConfig()
+	}
 }
 
 //Unmount unmount the requested volume

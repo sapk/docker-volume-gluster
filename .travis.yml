@@ -7,35 +7,52 @@ addons:
     packages:
     - upx-ucl
 go:
-  - 1.8
   - 1.9
   - tip
 
 before_install:
+  - curl https://repogen.simplylinux.ch/txt/xenial/sources_4a205a2731f617800bd74e748bc6f343aa6369d6.txt | sudo tee /etc/apt/sources.list
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get install -qq pkg-config fuse
   - sudo modprobe fuse
   - sudo chmod 666 /dev/fuse
-  - sudo apt-get -y install docker-ce glusterfs-client
+  - sudo apt-get -y install glusterfs-client
+  - sudo apt-get -y install docker-ce
+  - sudo apt-get -y install attr python-jwt
+  - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
+  - wget https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
+  - sudo dpkg -i glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
+  - sudo dpkg -i glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
+  - rm *.deb
+  - sudo cat /etc/mtab
+  - sudo cat /etc/fstab
+#  - sudo -E apt-get -q -y --purge remove docker-ce
+#  - sudo -E apt-cache policy docker-ce
+#  - curl -sSL https://get.docker.com/ | sh
+#  - sudo -E stop docker
+  - sudo usermod -aG docker travis
+#  - sudo cat /etc/default/docker
+#  - sudo -E start docker
 install:
   - make dev-deps
 
 script:
   - make lint
   - make build
-  - make test-unit
+#  - make test-coverage
+  - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" &&  make test-coverage'
+#  - make test-unit
 #  - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" && make test'
-#  - sudo ls -lah /var/log/glusterfs/
-#  - sudo cat /var/log/glusterfs/*
+  - sudo ls -lah /var/log/glusterfs/
+  - sudo cat /var/log/glusterfs/*
   - ./docker-volume-gluster
 
 #after_success:
 #  - make test-coverage
 
 before_deploy:
-  - make compress
   - make release
   - docker --version
   - make docker-plugin
@@ -48,7 +65,6 @@ deploy:
     secure: SAD6luuJhgzS7ZavymCxLaTlCbxp9VQax0uf4ozWByt0uwsLKtDM4Je4c9z9bx40PmEBKOpSoso4umL4AcY1yrQ2UTMJD+GxedmqDnge2ibfhHZMTxeDkLF3JLsACfQmibNzN/+b9nNdgyzQYnB4+OvKOmEvtHWwNP7qOuU+9QTNK/rNt5MBXk29aJFL1/t3oIvCfHl1D96pssE6uVURcXiPGkgNcSLBUewYwPwqjGqgG/xu/lgQEwpW6AE4OfwJLpdGMR/V1DUNMNs47Gt7Vh+PBRm/M7cZUYyc+CRuXuSM+PKr9xlH8mFHu6IrcM4n5Sy94A7ldB5dfn9HA+WLXEOhSej3NB06sFkjITnKSWCVCGVzzXuH5CMiwBDRKmhFLunFe9Wcz52W2wIumesaNuZOm9LbiBV47UicggeiZkhar1tvjQoFgw6R57+Wxdhdon7fwVO3euRSH7fm0RyEN1PgO92U5/gHgOO+Khlsl3GPqWNgyqeh0Ej4Ke9mFB0VjO+a8uNAQlrp+v94kQSWqpXUD30/fnZhu+sBURJ1pikH/WAhcnKEvYk7Kq5/kSuYqO0dxxEDrHh00Gwo/uHhhnOp3BNe/v1/TseSS4FOxaLrbTKCDRU+B38bsi8FoZ7J68xK9dT19TF+6ZXqka1LNIyV4ITCjkRenHMfCWWrF78=
   file_glob: true
   file:
-    - "./docker-volume-gluster"
     - build/*.tar.gz
   skip_cleanup: true
   on:

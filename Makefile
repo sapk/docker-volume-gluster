@@ -143,7 +143,8 @@ test-unit: dev-deps deps format
 
 test-integration: dev-deps deps format
 	@echo -e "$(OK_COLOR)==> Running integration tests...$(NO_COLOR)"
-	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
+	go test -v -timeout 1h -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
+#	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/driver ./gluster/integration
 
 test-coverage: test
 	@echo -e "$(OK_COLOR)==> Uploading coverage ...$(NO_COLOR)"
@@ -184,7 +185,7 @@ deps:
 
 update-deps: dev-deps
 	@echo -e "$(OK_COLOR)==> Updating all dependencies ...$(NO_COLOR)"
-	$(GOPATH)/bin/vendetta -n $(APP_PACKAGE) -u
+	$(GOPATH)/bin/vendetta -n $(APP_PACKAGE) -u -p
 #@go get -d -v -u ./...
 
 

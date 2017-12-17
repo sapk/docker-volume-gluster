@@ -3,10 +3,11 @@ package common
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/docker/go-plugins-helpers/volume"
 )
@@ -17,7 +18,7 @@ type Driver interface {
 	GetVolumes() map[string]Volume
 	GetMounts() map[string]Mount
 	SaveConfig() error
-	RunCmd(string) error
+	StartCmd(name string, arg ...string) (*exec.Cmd, error)
 }
 
 //Volume needed interface for some commons interactions
@@ -32,6 +33,8 @@ type Volume interface {
 type Mount interface {
 	increasable
 	GetPath() string
+	//GetProcess() *exec.Cmd
+	SetProcess(*exec.Cmd)
 }
 
 type increasable interface {
@@ -136,8 +139,12 @@ func Unmount(d Driver, vName string) error {
 	}
 
 	if m.GetConnections() <= 1 {
-		cmd := fmt.Sprintf("/usr/bin/umount %s", m.GetPath())
-		if err := d.RunCmd(cmd); err != nil {
+		c, err := d.StartCmd("/usr/bin/umount", m.GetPath())
+		if err != nil {
+			return err
+		}
+		err = c.Wait()
+		if err != nil {
 			return err
 		}
 		SetN(0, m, v)

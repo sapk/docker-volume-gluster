@@ -11,8 +11,8 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -52,15 +52,13 @@ func (d *GlusterDriver) SaveConfig() error {
 	return nil
 }
 
-//RunCmd run deamon in context of this gvfs drive with custome env
-func (d *GlusterDriver) RunCmd(cmd string) error {
-	log.Debugf(cmd)
-	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
-	if err != nil {
-		log.Debugf("Error: %v", err)
-	}
-	log.Debugf("Output: %v", out)
-	return err
+//StartCmd start deamon in context of this gluster driver and keep it in backgroud
+func (d *GlusterDriver) StartCmd(bin string, arg ...string) (*exec.Cmd, error) {
+	log.Debugf("%s %s", bin, strings.Join(arg, " "))
+	c := exec.Command(bin, arg...)
+	c.Stdout = d.logOut
+	c.Stderr = d.logErr
+	return c, c.Start()
 }
 
 func isValidURI(volURI string) bool {
@@ -68,10 +66,15 @@ func isValidURI(volURI string) bool {
 	return re.MatchString(volURI)
 }
 
-func parseVolURI(volURI string) string {
+func parseVolURI(volURI string) []string {
 	volParts := strings.Split(volURI, ":")
 	volServers := strings.Split(volParts[0], ",")
-	return fmt.Sprintf("--volfile-id='%s' -s '%s'", volParts[1], strings.Join(volServers, "' -s '"))
+	ret := make([]string, 1+len(volServers))
+	ret[0] = fmt.Sprintf("--volfile-id=%s", volParts[1])
+	for i, server := range volServers {
+		ret[i+1] = fmt.Sprintf("--volfile-server=%s", server)
+	}
+	return ret
 }
 
 func getMountName(d *GlusterDriver, r *volume.CreateRequest) string {

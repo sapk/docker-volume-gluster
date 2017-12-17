@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/docker/go-plugins-helpers/volume"
@@ -34,16 +35,16 @@ func TestParseVolURI(t *testing.T) {
 		value  string
 		result string
 	}{
-		{"test:volume", "--volfile-id='volume' -s 'test'"},
-		{"test,test2:volume", "--volfile-id='volume' -s 'test' -s 'test2'"},
-		{"192.168.1.1:volume", "--volfile-id='volume' -s '192.168.1.1'"},
-		{"192.168.1.1,10.8.0.1:volume", "--volfile-id='volume' -s '192.168.1.1' -s '10.8.0.1'"},
-		{"192.168.1.1,test2:volume", "--volfile-id='volume' -s '192.168.1.1' -s 'test2'"},
+		{"test:volume", "--volfile-id=volume --volfile-server=test"},
+		{"test,test2:volume", "--volfile-id=volume --volfile-server=test --volfile-server=test2"},
+		{"192.168.1.1:volume", "--volfile-id=volume --volfile-server=192.168.1.1"},
+		{"192.168.1.1,10.8.0.1:volume", "--volfile-id=volume --volfile-server=192.168.1.1 --volfile-server=10.8.0.1"},
+		{"192.168.1.1,test2:volume", "--volfile-id=volume --volfile-server=192.168.1.1 --volfile-server=test2"},
 	}
 
 	for _, test := range tt {
 		r := parseVolURI(test.value)
-		if test.result != r {
+		if test.result != strings.Join(r, " ") {
 			t.Errorf("Expected to be '%v' , got '%v'", test.result, r)
 		}
 	}
