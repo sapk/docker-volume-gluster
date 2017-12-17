@@ -255,7 +255,8 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	d.GetLock().Lock()
 	defer d.GetLock().Unlock()
 
-	c, err := d.StartCmd(d.binary, append(parseVolURI(v.GetRemote()), "--log-level", "INFO", "--log-file", "/dev/stdout", "--no-daemon", m.GetPath())...) // TODO --debug
+	//c, err := d.StartCmd(d.binary, append(parseVolURI(v.GetRemote()), "--log-level", "INFO", "--log-file", "/dev/stdout", "--no-daemon", m.GetPath())...) // TODO --debug
+	c, err := d.StartCmd(d.binary, append(parseVolURI(v.GetRemote()), "--no-daemon", m.GetPath())...) // TODO --debug
 
 	if err != nil {
 		return nil, err
