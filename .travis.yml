@@ -26,6 +26,8 @@ before_install:
   - sudo dpkg -i glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb
   - sudo dpkg -i glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb
   - rm *.deb
+  - sudo cat /etc/mtab
+  - sudo cat /etc/fstab
 #  - sudo -E apt-get -q -y --purge remove docker-ce
 #  - sudo -E apt-cache policy docker-ce
 #  - curl -sSL https://get.docker.com/ | sh
