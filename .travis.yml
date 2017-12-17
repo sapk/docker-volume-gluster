@@ -13,7 +13,9 @@ go:
 
 before_install:
   - curl -fsSL https://download.gluster.org/pub/gluster/glusterfs/3.12/rsa.pub | sudo apt-key add -
-  - sudo add-apt-repository -y ppa:gluster/glusterfs-3.12
+  - sudo dpkg -i <(curl -fsSL https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-common_3.12.4-ubuntu1~xenial1_amd64.deb)
+  - sudo dpkg -i <(curl -fsSL https://launchpad.net/~gluster/+archive/ubuntu/glusterfs-3.12/+files/glusterfs-client_3.12.4-ubuntu1~xenial1_amd64.deb)
+#  - sudo add-apt-repository -y ppa:gluster/glusterfs-3.12
 #  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 #  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
