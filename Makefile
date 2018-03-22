@@ -165,7 +165,7 @@ dev-deps:
 	@echo -e "$(OK_COLOR)==> Installing developement dependencies...$(NO_COLOR)"
 	@go get github.com/nsf/gocode
 	@go get github.com/alecthomas/gometalinter
-	@go get github.com/dpw/vendetta #Vendoring
+	@go get github.com/golang/dep/cmd/dep #Vendoring
 	@go get github.com/wadey/gocovmerge
 	@$(GOPATH)/bin/gometalinter --install > /dev/null
 
@@ -173,20 +173,22 @@ update-dev-deps:
 	@echo -e "$(OK_COLOR)==> Installing/Updating developement dependencies...$(NO_COLOR)"
 	go get -u github.com/nsf/gocode
 	go get -u github.com/alecthomas/gometalinter
-	go get -u github.com/dpw/vendetta #Vendoring
+	go get -u github.com/golang/dep/cmd/dep #Vendoring
 	go get -u github.com/wadey/gocovmerge
 	$(GOPATH)/bin/gometalinter --install --update
 
 deps:
 	@echo -e "$(OK_COLOR)==> Installing dependencies ...$(NO_COLOR)"
-	@git submodule update --init --recursive
-# @$(GOPATH)/bin/vendetta -n $(APP_PACKAGE)
+	@$(GOPATH)/bin/dep ensure
+#	@git submodule update --init --recursive
+#	@$(GOPATH)/bin/vendetta -n $(APP_PACKAGE)
 #	@go get -d -v ./...
 
 update-deps: dev-deps
 	@echo -e "$(OK_COLOR)==> Updating all dependencies ...$(NO_COLOR)"
-	$(GOPATH)/bin/vendetta -n $(APP_PACKAGE) -u
-#@go get -d -v -u ./...
+	$(GOPATH)/bin/dep ensure -update
+#	$(GOPATH)/bin/vendetta -n $(APP_PACKAGE) -u
+#	@go get -d -v -u ./...
 
 
 done:
