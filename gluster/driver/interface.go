@@ -1,7 +1,10 @@
 package driver
 
 import (
+	"sync"
+
 	"github.com/sapk/docker-volume-helpers/driver"
+	"github.com/spf13/viper"
 
 	"github.com/docker/go-plugins-helpers/volume"
 )
@@ -49,6 +52,36 @@ func (v *GlusterVolume) GetStatus() map[string]interface{} {
 	return map[string]interface{}{
 		"TODO": "List",
 	}
+}
+
+//GlusterDriver the global driver responding to call
+type GlusterDriver struct {
+	lock          sync.RWMutex
+	root          string
+	mountUniqName bool
+	persitence    *viper.Viper
+	volumes       map[string]*GlusterVolume
+	mounts        map[string]*GlusterMountpoint
+}
+
+func (d *GlusterDriver) GetVolumes() map[string]driver.Volume {
+	vi := make(map[string]driver.Volume, len(d.volumes))
+	for k, i := range d.volumes {
+		vi[k] = i
+	}
+	return vi
+}
+
+func (d *GlusterDriver) GetMounts() map[string]driver.Mount {
+	mi := make(map[string]driver.Mount, len(d.mounts))
+	for k, i := range d.mounts {
+		mi[k] = i
+	}
+	return mi
+}
+
+func (d *GlusterDriver) GetLock() *sync.RWMutex {
+	return &d.lock
 }
 
 //List volumes handled by these driver
