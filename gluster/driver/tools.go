@@ -11,8 +11,8 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -41,12 +41,12 @@ func (d *GlusterDriver) SaveConfig() error {
 	}
 	b, err := json.Marshal(GlusterPersistence{Version: CfgVersion, Volumes: d.volumes, Mounts: d.mounts})
 	if err != nil {
-		log.Warn("Unable to encode persistence struct, %v", err)
+		logrus.Warn("Unable to encode persistence struct, %v", err)
 	}
-	//log.Debug("Writing persistence struct, %v", b, d.volumes)
+	//logrus.Debug("Writing persistence struct, %v", b, d.volumes)
 	err = ioutil.WriteFile(CfgFolder+"/persistence.json", b, 0600)
 	if err != nil {
-		log.Warn("Unable to write persistence struct, %v", err)
+		logrus.Warn("Unable to write persistence struct, %v", err)
 		return fmt.Errorf("SaveConfig: %s", err)
 	}
 	return nil
@@ -54,12 +54,12 @@ func (d *GlusterDriver) SaveConfig() error {
 
 //RunCmd run deamon in context of this gvfs drive with custome env
 func (d *GlusterDriver) RunCmd(cmd string) error {
-	log.Debugf(cmd)
+	logrus.Debugf(cmd)
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
-		log.Debugf("Error: %v", err)
+		logrus.Debugf("Error: %v", err)
 	}
-	log.Debugf("Output: %v", out)
+	logrus.Debugf("Output: %v", out)
 	return err
 }
 

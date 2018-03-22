@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/sapk/docker-volume-gluster/gluster/driver"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -66,19 +66,19 @@ func Init() {
 	rootCmd.Long = fmt.Sprintf(longHelp, Version, Branch, Commit, BuildTime)
 	rootCmd.AddCommand(versionCmd, daemonCmd)
 	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }
 
 //DaemonStart Start the deamon
 func DaemonStart(cmd *cobra.Command, args []string) {
 	d := driver.Init(BaseDir, mountUniqName)
-	log.Debug(d)
+	logrus.Debug(d)
 	h := volume.NewHandler(d)
-	log.Debug(h)
+	logrus.Debug(h)
 	err := h.ServeUnix(PluginAlias, 0)
 	if err != nil {
-		log.Debug(err)
+		logrus.Debug(err)
 	}
 }
 
@@ -91,9 +91,9 @@ func setupFlags() {
 
 func setupLogger(cmd *cobra.Command, args []string) {
 	if verbose, _ := cmd.Flags().GetBool(VerboseFlag); verbose {
-		log.SetLevel(log.DebugLevel)
-		log.Debugf("Debug mode on")
+		logrus.SetLevel(logrus.DebugLevel)
+		logrus.Debugf("Debug mode on")
 	} else {
-		log.SetLevel(log.InfoLevel)
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 }
