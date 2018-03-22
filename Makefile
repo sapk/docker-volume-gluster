@@ -179,7 +179,7 @@ update-dev-deps:
 
 deps:
 	@echo -e "$(OK_COLOR)==> Installing dependencies ...$(NO_COLOR)"
-	@$(GOPATH)/bin/dep ensure
+	@$(GOPATH)/bin/dep ensure -vendor-only
 
 update-deps: dev-deps
 	@echo -e "$(OK_COLOR)==> Updating all dependencies ...$(NO_COLOR)"
