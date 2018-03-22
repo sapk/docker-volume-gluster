@@ -6,7 +6,7 @@ WORKDIR /go/src/app
 RUN make build
 
 FROM debian:testing-slim
-MAINTAINER Antoine GIRARD <antoine.girard@sapk.fr>
+LABEL maintainer="Antoine GIRARD <antoine.girard@sapk.fr>"
 
 RUN apt-get update \
  && apt-get install -y glusterfs-client \
