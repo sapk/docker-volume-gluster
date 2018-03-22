@@ -180,15 +180,10 @@ update-dev-deps:
 deps:
 	@echo -e "$(OK_COLOR)==> Installing dependencies ...$(NO_COLOR)"
 	@$(GOPATH)/bin/dep ensure
-#	@git submodule update --init --recursive
-#	@$(GOPATH)/bin/vendetta -n $(APP_PACKAGE)
-#	@go get -d -v ./...
 
 update-deps: dev-deps
 	@echo -e "$(OK_COLOR)==> Updating all dependencies ...$(NO_COLOR)"
 	$(GOPATH)/bin/dep ensure -update
-#	$(GOPATH)/bin/vendetta -n $(APP_PACKAGE) -u
-#	@go get -d -v -u ./...
 
 
 done:
