@@ -177,7 +177,7 @@ update-dev-deps:
 	go get -u github.com/wadey/gocovmerge
 	$(GOPATH)/bin/gometalinter --install --update
 
-deps:
+deps: dev-deps
 	@echo -e "$(OK_COLOR)==> Installing dependencies ...$(NO_COLOR)"
 	@$(GOPATH)/bin/dep ensure -vendor-only
 
