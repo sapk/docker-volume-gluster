@@ -14,7 +14,7 @@ var (
 	//MountTimeout timeout before killing a mount try in seconds
 	MountTimeout = 30
 	//CfgVersion current config version compat
-	CfgVersion = 1
+	CfgVersion = 2
 	//CfgFolder config folder
 	CfgFolder = "/etc/docker-volumes/gluster/"
 )
@@ -42,7 +42,7 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 }
 
 func mountVolume(d *basic.Driver, v driver.Volume, m driver.Mount, r *volume.MountRequest) (*volume.MountResponse, error) {
-	cmd := fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetRemote()), m.GetPath())
+	cmd := fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetOptions()["voluri"]), m.GetPath())
 	//cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.VolumeURI, m.Path)
 	//TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
 	if err := d.RunCmd(cmd); err != nil {
