@@ -34,7 +34,6 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 		},
 	}
 	eventHandler := basic.DriverEventHandler{
-		IsValidURI:    isValidURI,
 		OnMountVolume: mountVolume,
 		GetMountName:  GetMountName,
 	}
