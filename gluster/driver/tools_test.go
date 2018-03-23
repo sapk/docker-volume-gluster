@@ -51,7 +51,7 @@ func TestParseVolURI(t *testing.T) {
 }
 
 func TestMountName(t *testing.T) {
-	name := GetMountName(&basic.Driver{
+	name, err := GetMountName(&basic.Driver{
 		Config: &basic.DriverConfig{
 			CustomOptions: map[string]interface{}{
 				"mountUniqName": false,
@@ -64,11 +64,15 @@ func TestMountName(t *testing.T) {
 		},
 	})
 
+	if err != nil {
+		t.Error("Expected to be null, got ", err)
+	}
+
 	if name != "test" {
 		t.Error("Expected to be test, got ", name)
 	}
 
-	nameuniq := GetMountName(&basic.Driver{
+	nameuniq, err := GetMountName(&basic.Driver{
 		Config: &basic.DriverConfig{
 			CustomOptions: map[string]interface{}{
 				"mountUniqName": true,
@@ -80,6 +84,10 @@ func TestMountName(t *testing.T) {
 			"voluri": "gluster-node:volname",
 		},
 	})
+
+	if err != nil {
+		t.Error("Expected to be null, got ", err)
+	}
 
 	if nameuniq != "gluster-node:volname" {
 		t.Error("Expected to be gluster-node:volname, got ", name)
