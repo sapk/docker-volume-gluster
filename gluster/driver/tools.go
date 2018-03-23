@@ -31,7 +31,7 @@ func GetMountName(d *basic.Driver, r *volume.CreateRequest) (string, error) {
 		return "", fmt.Errorf("voluri option required")
 	}
 	r.Options["voluri"] = strings.Trim(r.Options["voluri"], "\"")
-	if !d.EventHandler.IsValidURI(r.Options["voluri"]) {
+	if !isValidURI(r.Options["voluri"]) {
 		return "", fmt.Errorf("voluri option is malformated")
 	}
 

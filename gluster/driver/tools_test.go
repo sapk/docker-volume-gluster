@@ -57,9 +57,6 @@ func TestMountName(t *testing.T) {
 				"mountUniqName": false,
 			},
 		},
-		EventHandler: &basic.DriverEventHandler{
-			IsValidURI: isValidURI,
-		},
 	}, &volume.CreateRequest{
 		Name: "test",
 		Options: map[string]string{
@@ -80,9 +77,6 @@ func TestMountName(t *testing.T) {
 			CustomOptions: map[string]interface{}{
 				"mountUniqName": true,
 			},
-		},
-		EventHandler: &basic.DriverEventHandler{
-			IsValidURI: isValidURI,
 		},
 	}, &volume.CreateRequest{
 		Name: "test",
