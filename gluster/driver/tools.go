@@ -26,9 +26,17 @@ func parseVolURI(volURI string) string {
 }
 
 //GetMountName get moint point base on request and driver config (mountUniqName)
-func GetMountName(d *basic.Driver, r *volume.CreateRequest) string {
-	if d.Config.CustomOptions["mountUniqName"].(bool) {
-		return url.PathEscape(r.Options["voluri"])
+func GetMountName(d *basic.Driver, r *volume.CreateRequest) (string, error) {
+	if r.Options == nil || r.Options["voluri"] == "" {
+		return "", fmt.Errorf("voluri option required")
 	}
-	return url.PathEscape(r.Name)
+	r.Options["voluri"] = strings.Trim(r.Options["voluri"], "\"")
+	if !d.EventHandler.IsValidURI(r.Options["voluri"]) {
+		return "", fmt.Errorf("voluri option is malformated")
+	}
+
+	if d.Config.CustomOptions["mountUniqName"].(bool) {
+		return url.PathEscape(r.Options["voluri"]), nil
+	}
+	return url.PathEscape(r.Name), nil
 }
