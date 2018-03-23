@@ -26,14 +26,17 @@ type GlusterDriver = basic.Driver
 func Init(root string, mountUniqName bool) *GlusterDriver {
 	logrus.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
 	config := basic.DriverConfig{
-		Version:       CfgVersion,
-		Root:          root,
-		Folder:        CfgFolder,
-		MountUniqName: mountUniqName,
+		Version: CfgVersion,
+		Root:    root,
+		Folder:  CfgFolder,
+		CustomOptions: map[string]interface{}{
+			"mountUniqName": mountUniqName,
+		},
 	}
 	eventHandler := basic.DriverEventHandler{
 		IsValidURI:    isValidURI,
 		OnMountVolume: mountVolume,
+		GetMountName:  GetMountName,
 	}
 	return basic.Init(&config, &eventHandler)
 }
