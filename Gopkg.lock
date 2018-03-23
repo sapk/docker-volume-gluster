@@ -82,7 +82,7 @@
     "basic",
     "driver"
   ]
-  revision = "3807ef7c576dedb6278e40ab782c45bbe0585716"
+  revision = "bfd3a7a8fbfd24d0b9740aac5e926276add13f8a"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
