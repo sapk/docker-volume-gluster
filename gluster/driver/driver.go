@@ -14,7 +14,7 @@ var (
 	//MountTimeout timeout before killing a mount try in seconds
 	MountTimeout = 30
 	//CfgVersion current config version compat
-	CfgVersion = 2
+	CfgVersion = 1
 	//CfgFolder config folder
 	CfgFolder = "/etc/docker-volumes/gluster/"
 )
