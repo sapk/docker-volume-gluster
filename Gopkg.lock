@@ -82,7 +82,7 @@
     "basic",
     "driver"
   ]
-  revision = "bfd3a7a8fbfd24d0b9740aac5e926276add13f8a"
+  revision = "9cd822bac0df573c2b63ea1f906c66c95d9f22da"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -172,6 +172,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f11055d475c5f86ae8db49bc6956e0743024643c09302046a62a5e5a6ed0793d"
+  inputs-digest = "adfee133c67d7b8676c0283833d1196bd70edd1b59045007e906a28e68c7da48"
   solver-name = "gps-cdcl"
   solver-version = 1
