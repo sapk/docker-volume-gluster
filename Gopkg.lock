@@ -78,8 +78,11 @@
 [[projects]]
   branch = "master"
   name = "github.com/sapk/docker-volume-helpers"
-  packages = ["driver"]
-  revision = "6dbf68899b0fbc41d15281438d8d0496c01c08a6"
+  packages = [
+    "basic",
+    "driver"
+  ]
+  revision = "bb4163c2ae92de3dc93a80352138803115e46d1b"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -169,6 +172,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c9d5344e319782f595b59ba247a2269534e3740fb0f9e0290ca7daf038415682"
+  inputs-digest = "f11055d475c5f86ae8db49bc6956e0743024643c09302046a62a5e5a6ed0793d"
   solver-name = "gps-cdcl"
   solver-version = 1
