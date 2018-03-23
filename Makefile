@@ -134,7 +134,7 @@ format:
 
 test: test-unit test-integration
 	@echo -e "$(OK_COLOR)==> Running test...$(NO_COLOR)"
-	gocovmerge coverage.unit.out coverage.inte.out > coverage.all
+	$(GOPATH)/bin/gocovmerge coverage.unit.out coverage.inte.out > coverage.all
 #	go tool cover -html=coverage.all -o coverage.html
 
 test-unit: dev-deps deps format
