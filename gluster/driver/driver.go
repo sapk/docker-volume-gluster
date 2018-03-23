@@ -14,17 +14,28 @@ var (
 	//MountTimeout timeout before killing a mount try in seconds
 	MountTimeout = 30
 	//CfgVersion current config version compat
-	CfgVersion = 1
+	CfgVersion = 2
 	//CfgFolder config folder
 	CfgFolder = "/etc/docker-volumes/gluster/"
 )
 
+//GlusterDriver docker volume plugin driver extension of basic plugin
 type GlusterDriver = basic.Driver
 
 //Init start all needed deps and serve response to API call
 func Init(root string, mountUniqName bool) *GlusterDriver {
 	logrus.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
-	return basic.Init(root, mountUniqName, CfgFolder, CfgVersion, isValidURI, mountVolume)
+	config := basic.DriverConfig{
+		Version:       CfgVersion,
+		Root:          root,
+		Folder:        CfgFolder,
+		MountUniqName: mountUniqName,
+	}
+	eventHandler := basic.DriverEventHandler{
+		IsValidURI:    isValidURI,
+		OnMountVolume: mountVolume,
+	}
+	return basic.Init(&config, &eventHandler)
 }
 
 func mountVolume(d *basic.Driver, v driver.Volume, m driver.Mount, r *volume.MountRequest) (*volume.MountResponse, error) {
