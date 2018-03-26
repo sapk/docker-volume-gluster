@@ -86,9 +86,9 @@ func setupGlusterCluster() {
 func cleanGlusterCluster() {
 	pwd := currentPWD()
 	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "down"))
-	logrus.Print(cmd("docker", "volume", "rm", "-f", "distributed", "replica", "distributed-double-server", "replica-double-server"))
-	logrus.Print(cmd("docker", "volume", "prune", "-f"))
-	//TODO logrus.Print(cmd("docker", "system", "prune", "-af"))
+	logrus.Print(cmd("docker", "volume", "rm", "-f", "glustercluster_brick-node-2", "glustercluster_brick-node-1", "glustercluster_brick-node-3", "glustercluster_state-node-1", "glustercluster_state-node-2", "glustercluster_state-node-3"))
+	// extra clean up logrus.Print(cmd("docker", "volume", "prune", "-f"))
+	// full  extra clean up logrus.Print(cmd("docker", "system", "prune", "-af"))
 }
 
 func cmd(cmd string, arg ...string) (string, error) {
@@ -208,5 +208,20 @@ func TestIntegration(t *testing.T) {
 		t.Errorf("Content inside gluster distributed volume in not the same : %s != %s", outDistributedContainer, out)
 	}
 	//TODO check persistence
+	
+	//TODO sub tests
+	for _, vol := range []string{"distributed-double-server", "replica-double-server", "distributed", "replica"} {
+		out, err = cmd("docker", "volume", "rm", vol)
+		if err != nil {
+			t.Errorf("Failed to remove mounted volume %s : %v", vol,  err)
+		}
+		if !strings.Contains(out, vol) { //TODO should be only "vol\n"
+			t.Errorf("Failed to remove mounted volume %s", vol)
+		}
+		out, err = cmd("docker", "volume", "ls", "-q")
+		if strings.Contains(out, vol) { //TODO should be "vol\n" to limit confussion ith other volume existing or generate name
+			t.Errorf("Failed to remove volume %s from volume list", vol)
+		}
+        }
 
 }
