@@ -208,12 +208,12 @@ func TestIntegration(t *testing.T) {
 		t.Errorf("Content inside gluster distributed volume in not the same : %s != %s", outDistributedContainer, out)
 	}
 	//TODO check persistence
-	
+
 	//TODO sub tests
 	for _, vol := range []string{"distributed-double-server", "replica-double-server", "distributed", "replica"} {
 		out, err = cmd("docker", "volume", "rm", vol)
 		if err != nil {
-			t.Errorf("Failed to remove mounted volume %s : %v", vol,  err)
+			t.Errorf("Failed to remove mounted volume %s : %v", vol, err)
 		}
 		if !strings.Contains(out, vol) { //TODO should be only "vol\n"
 			t.Errorf("Failed to remove mounted volume %s", vol)
@@ -222,6 +222,6 @@ func TestIntegration(t *testing.T) {
 		if strings.Contains(out, vol) { //TODO should be "vol\n" to limit confussion ith other volume existing or generate name
 			t.Errorf("Failed to remove volume %s from volume list", vol)
 		}
-        }
+	}
 
 }
