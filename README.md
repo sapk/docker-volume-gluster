@@ -19,7 +19,7 @@ docker run -v test:/mnt --rm -ti ubuntu
 
 ## Create and Mount volume
 ```
-docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>,<otherserver>,<otheroptionalserver>:<volumename>" --name test
+docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>,<otherserver>,<otheroptionalserver>:<volumename></optional/sub/dir>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
 ```
 
@@ -29,7 +29,7 @@ volumes:
   some_vol:
     driver: sapk/plugin-gluster
     driver_opts:
-      voluri: "<volumeserver>:<volumename>"
+      voluri: "<volumeserver>:<volumename></optional/sub/dir>"
 ```
 
 
