@@ -8,21 +8,35 @@ import (
 
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/sapk/docker-volume-helpers/basic"
+	"golang.org/x/net/idna"
 )
 
 const (
-	validHostnameRegex = `(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])`
+	validHostnameRegex = `(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9\-])\.)*([A-Za-z0-9\-]|[A-Za-z0-9\-][A-Za-z0-9\-]*[A-Za-z0-9\-])`
+	validVolURIRegex   = `((` + validHostnameRegex + `)(,` + validHostnameRegex + `)*):\/?([^\/]+)(/.+)?`
 )
 
 func isValidURI(volURI string) bool {
-	re := regexp.MustCompile(validHostnameRegex + ":.+")
+	volURI, err := idna.ToASCII(volURI)
+	if err != nil {
+		return false
+	}
+	re := regexp.MustCompile(validVolURIRegex)
 	return re.MatchString(volURI)
 }
 
 func parseVolURI(volURI string) string {
-	volParts := strings.Split(volURI, ":")
-	volServers := strings.Split(volParts[0], ",")
-	return fmt.Sprintf("--volfile-id='%s' -s '%s'", volParts[1], strings.Join(volServers, "' -s '"))
+	volURI, _ = idna.ToASCII(volURI)
+	re := regexp.MustCompile(validVolURIRegex)
+	res := re.FindAllStringSubmatch(volURI, -1)
+	volServers := strings.Split(res[0][1], ",")
+	volumeID := res[0][10]
+	subDir := res[0][11]
+
+	if subDir == "" {
+		return fmt.Sprintf("--volfile-id='%s' -s '%s'", volumeID, strings.Join(volServers, "' -s '"))
+	}
+	return fmt.Sprintf("--volfile-id='%s' --subdir-mount='%s' -s '%s'", volumeID, subDir, strings.Join(volServers, "' -s '"))
 }
 
 //GetMountName get moint point base on request and driver config (mountUniqName)
