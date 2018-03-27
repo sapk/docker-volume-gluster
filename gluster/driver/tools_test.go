@@ -75,7 +75,7 @@ func TestMountName(t *testing.T) {
 		t.Error("Expected to be null, got ", err)
 	}
 
-	if name != "test" {			
+	if name != "test" {
 		t.Error("Expected to be test, got ", name)
 	}
 
