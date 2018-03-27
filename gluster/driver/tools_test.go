@@ -21,6 +21,10 @@ func TestIsValidURI(t *testing.T) {
 		{"192.168.1.:volume", false},
 		{"192.168.1.1,10.8.0.1:volume", true},
 		{"192.168.1.1,test2:volume", true},
+		{"192.168.1.1,test2:volume/subdir", true},
+		{"192.168.1.1,test2:/volume/subdir", true},
+		{"192.168.1.1,test2://volume/subdir", false},
+		{"192.168.1.1,test2:/volume", true},
 	}
 
 	for _, test := range tt {
@@ -36,6 +40,9 @@ func TestParseVolURI(t *testing.T) {
 		result string
 	}{
 		{"test:volume", "--volfile-id='volume' -s 'test'"},
+		{"test:/volume", "--volfile-id='volume' -s 'test'"},
+		{"test:/volume/subdir", "--volfile-id='volume' --subdir-mount='/subdir' -s 'test'"},
+		{"test:/volume/subdir/dir", "--volfile-id='volume' --subdir-mount='/subdir/dir' -s 'test'"},
 		{"test,test2:volume", "--volfile-id='volume' -s 'test' -s 'test2'"},
 		{"192.168.1.1:volume", "--volfile-id='volume' -s '192.168.1.1'"},
 		{"192.168.1.1,10.8.0.1:volume", "--volfile-id='volume' -s '192.168.1.1' -s '10.8.0.1'"},
@@ -68,7 +75,7 @@ func TestMountName(t *testing.T) {
 		t.Error("Expected to be null, got ", err)
 	}
 
-	if name != "test" {
+	if name != "test" {			
 		t.Error("Expected to be test, got ", name)
 	}
 
