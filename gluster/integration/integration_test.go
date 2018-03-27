@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math/rand"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -25,8 +26,15 @@ var randomTestName = "000000"
 func TestMain(m *testing.M) {
 	//TODO check system for gluster, docker and docker-compose (install container version if needed)
 	//TODO need root to start plugin
+
 	randomTestName = strconv.Itoa(rand.Int())
-	//Setup
+
+	//Setup managed plugin
+	setupManagedPlugin()
+	//Clean up
+	defer cleanManagedPlugin()
+
+	//Setup cluster
 	setupGlusterCluster()
 	//Clean up
 	defer cleanGlusterCluster()
@@ -42,13 +50,26 @@ func setupPlugin() {
 	gluster.PluginAlias = "gluster-local-integration"
 	gluster.BaseDir = filepath.Join(volume.DefaultDockerRootDirectory, gluster.PluginAlias)
 	driver.CfgFolder = "/etc/docker-volumes/" + gluster.PluginAlias
-	logrus.Print(cmd("rm", "-rf", driver.CfgFolder))
+	logrus.Print(cmd("rm", os.Environ(), "-rf", driver.CfgFolder))
 	logrus.SetLevel(logrus.DebugLevel)
 
 	gluster.DaemonStart(nil, []string{})
 	time.Sleep(timeInterval)
 	//logrus.Print(cmd("docker", "plugin", "ls"))
-	logrus.Print(cmd("docker", "info", "-f", "{{.Plugins.Volume}}"))
+	logrus.Print(cmd("docker", os.Environ(), "info", "-f", "{{.Plugins.Volume}}"))
+}
+
+func setupManagedPlugin() {
+	//Build custom integration docker plugin
+	env := os.Environ()
+	env = append(env, fmt.Sprintf("PLUGIN_USER=%s", "testing"))
+	logrus.Print(cmd("make", env, "--directory=../../", "docker-plugin"))
+	logrus.Print(cmd("make", env, "--directory=../../", "docker-plugin-enable"))
+}
+
+func cleanManagedPlugin() {
+	logrus.Print(cmd("docker", os.Environ(), "plugin", "disable", "testing/plugin-gluster"))
+	logrus.Print(cmd("docker", os.Environ(), "plugin", "rm", "testing/plugin-gluster"))
 }
 
 func setupGlusterCluster() {
@@ -84,7 +105,6 @@ func setupGlusterCluster() {
 	time.Sleep(timeInterval)
 }
 
-//gluster pool list
 func cleanGlusterCluster() {
 	logrus.Print("Cleaning up")
 	logrus.Print(dockerCompose("down"))
@@ -96,12 +116,13 @@ func cleanGlusterCluster() {
 func dockerCompose(arg ...string) (string, error) {
 	pwd := currentPWD()
 	args := append([]string{"-f", pwd + "/docker/gluster-cluster/docker-compose.yml", "--project-name", "test_inte_" + randomTestName}, arg...)
-	return cmd("docker-compose", args...)
+	return cmd("docker-compose", os.Environ(), args...)
 }
 
-func cmd(cmd string, arg ...string) (string, error) {
+func cmd(cmd string, env []string, arg ...string) (string, error) {
 	fmt.Println("Executing: " + cmd + " " + strings.Join(arg, " "))
 	c := exec.Command(cmd, arg...)
+	c.Env = env
 	var out bytes.Buffer
 	c.Stdout = &out
 	c.Stderr = &out
@@ -122,7 +143,7 @@ func getGlusterClusterContainers() []string {
 }
 
 func getContainerIP(cid string) string {
-	ips, _ := cmd("docker", "inspect", "--format", "'{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'", cid)
+	ips, _ := cmd("docker", os.Environ(), "inspect", "--format", "'{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'", cid)
 	return strings.Trim(strings.Split(ips, "\n")[0], "'")
 }
 
@@ -144,40 +165,47 @@ func TestIntegration(t *testing.T) {
 	testCases := []struct {
 		id       string
 		name     string
+		driver   string
 		volume   string
 		servers  []string
 		hostname string
 	}{
-		{strconv.Itoa(rand.Int()), "replica", "test-replica", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "distributed", "test-distributed", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "replica-double-server", "test-replica", IPs[:2], ""},
-		{strconv.Itoa(rand.Int()), "distributed-double-server", "test-distributed", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "replica", gluster.PluginAlias, "test-replica", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "distributed", gluster.PluginAlias, "test-distributed", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "replica-double-server", gluster.PluginAlias, "test-replica", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "distributed-double-server", gluster.PluginAlias, "test-distributed", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "managed-replica", "testing/plugin-gluster", "test-replica", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "managed-distributed", "testing/plugin-gluster", "test-distributed", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "managed-replica-double-server", "testing/plugin-gluster", "test-replica", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "managed-distributed-double-server", "testing/plugin-gluster", "test-distributed", IPs[:2], ""},
 	}
 
 	for _, tc := range testCases {
 		t.Run("Create volume for "+tc.name, func(t *testing.T) {
-			logrus.Print(cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+strings.Join(tc.servers, ",")+":"+tc.volume+"\"", tc.id))
+			logrus.Print(cmd("docker", os.Environ(), "volume", "create", "--driver", tc.driver, "--opt", "voluri=\""+strings.Join(tc.servers, ",")+":"+tc.volume+"\"", tc.id))
 			time.Sleep(timeInterval)
 		})
 		time.Sleep(3 * timeInterval)
 		//TODO test volume exist
 	}
 
-	logrus.Print(cmd("docker", "volume", "ls"))
+	logrus.Print(cmd("docker", os.Environ(), "volume", "ls"))
 
 	for i, tc := range testCases {
 		t.Run("Test volume "+tc.name, func(t *testing.T) {
-			out, err := cmd("docker", "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/ls", "/mnt")
+			out, err := cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/ls", "/mnt")
 			logrus.Println(out)
 			if err != nil {
 				t.Errorf("Failed to list mounted volume : %v", err)
 			}
-			out, err = cmd("docker", "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
-			logrus.Println(out)
-			if err != nil {
-				t.Errorf("Failed to write inside mounted volume : %v", err)
+			if !strings.Contains(tc.name, "double") {
+				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
+				logrus.Println(out)
+				if err != nil {
+					t.Errorf("Failed to write inside mounted volume : %v", err)
+				}
 			}
-			testCases[i].hostname, err = cmd("docker", "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", "/mnt/container")
+			testCases[i].hostname, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", "/mnt/container")
 			logrus.Println(out)
 			if err != nil {
 				t.Errorf("Failed to read from mounted volume : %v", err)
@@ -201,14 +229,14 @@ func TestIntegration(t *testing.T) {
 	//TODO check persistence
 
 	for _, tc := range testCases {
-		out, err := cmd("docker", "volume", "rm", tc.id)
+		out, err := cmd("docker", os.Environ(), "volume", "rm", tc.id)
 		if err != nil {
 			t.Errorf("Failed to remove mounted volume %s (%s) : %v", tc.name, tc.id, err)
 		}
 		if !strings.Contains(out, tc.id) { //TODO should be only "vol\n"
 			t.Errorf("Failed to remove mounted volume %s (%s)", tc.name, tc.id)
 		}
-		out, err = cmd("docker", "volume", "ls", "-q")
+		out, err = cmd("docker", os.Environ(), "volume", "ls", "-q")
 		if strings.Contains(out, tc.id) { //TODO should be "vol\n" to limit confussion ith other volume existing or generate name
 			t.Errorf("Failed to remove volume %s (%s) from volume list", tc.name, tc.id)
 		}
