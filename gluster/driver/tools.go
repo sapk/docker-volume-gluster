@@ -11,18 +11,26 @@ import (
 )
 
 const (
-	validHostnameRegex = `(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])`
+	validVolUriRegex = `([^:]+?):\/?([^\/]+)(/.+)?`
 )
 
 func isValidURI(volURI string) bool {
-	re := regexp.MustCompile(validHostnameRegex + ":.+")
+	re := regexp.MustCompile(validVolUriRegex)
 	return re.MatchString(volURI)
 }
 
 func parseVolURI(volURI string) string {
-	volParts := strings.Split(volURI, ":")
-	volServers := strings.Split(volParts[0], ",")
-	return fmt.Sprintf("--volfile-id='%s' -s '%s'", volParts[1], strings.Join(volServers, "' -s '"))
+	re := regexp.MustCompile(validVolUriRegex)
+	res := re.FindAllStringSubmatch(volParts[1], -1)
+	volServers := strings.Split(res[0][1], ",")
+	volumeId := res[0][2]
+	subDir := res[0][3]
+	
+	if (subDir == "") {
+		return fmt.Sprintf("--volfile-id='%s' -s '%s'", volumeId, strings.Join(volServers, "' -s '"))
+	} else {
+		return fmt.Sprintf("--volfile-id='%s' --subdir-mount='%s' -s '%s'", volumeId, subDir, strings.Join(volServers, "' -s '"))
+	}
 }
 
 //GetMountName get moint point base on request and driver config (mountUniqName)
