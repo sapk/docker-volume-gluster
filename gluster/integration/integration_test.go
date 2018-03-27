@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"math/rand"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -21,20 +20,22 @@ import (
 
 const timeInterval = 2 * time.Second
 
+var randomTestName = "000000"
+
 func TestMain(m *testing.M) {
 	//TODO check system for gluster, docker and docker-compose (install container version if needed)
 	//TODO need root to start plugin
-
+	randomTestName = strconv.Itoa(rand.Int())
 	//Setup
 	setupGlusterCluster()
+	//Clean up
+	defer cleanGlusterCluster()
 
 	//Do tests
-	retVal := m.Run()
+	//retVal := m.Run()
+	m.Run()
 
-	//Clean up
-	cleanGlusterCluster()
-
-	os.Exit(retVal)
+	//os.Exit(retVal)
 }
 
 func setupPlugin() {
@@ -51,46 +52,51 @@ func setupPlugin() {
 }
 
 func setupGlusterCluster() {
-	pwd := currentPWD()
-	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "up", "-d"))
+	logrus.Print(dockerCompose("up", "-d"))
 	time.Sleep(timeInterval)
 	nodes := []string{"node-1", "node-2", "node-3"}
 
 	for _, n := range nodes {
 		time.Sleep(timeInterval)
-		logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", n, "mkdir", "-p", "/brick"))
+		logrus.Print(dockerCompose("exec", "-T", n, "mkdir", "-p", "/brick"))
 	}
 
 	time.Sleep(timeInterval)
 	IPs := getGlusterClusterContainersIPs()
 	for _, ip := range IPs[1:] {
 		time.Sleep(timeInterval)
-		logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "peer", "probe", ip))
+		logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "peer", "probe", ip))
 	}
 
 	time.Sleep(timeInterval)
-	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "pool", "list"))
-	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "peer", "status"))
+	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "pool", "list"))
+	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "peer", "status"))
 	time.Sleep(timeInterval)
 
-	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "volume", "create", "test-replica", "replica", "3", IPs[0]+":/brick/replica", IPs[1]+":/brick/replica", IPs[2]+":/brick/replica"))
+	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "create", "test-replica", "replica", "3", IPs[0]+":/brick/replica", IPs[1]+":/brick/replica", IPs[2]+":/brick/replica"))
 	time.Sleep(timeInterval)
-	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "volume", "create", "test-distributed", IPs[0]+":/brick/distributed", IPs[1]+":/brick/distributed", IPs[2]+":/brick/distributed"))
+	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "create", "test-distributed", IPs[0]+":/brick/distributed", IPs[1]+":/brick/distributed", IPs[2]+":/brick/distributed"))
 
 	time.Sleep(timeInterval)
-	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "volume", "start", "test-replica"))
+	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "start", "test-replica"))
 	time.Sleep(timeInterval)
-	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "exec", "-T", "node-1", "gluster", "volume", "start", "test-distributed"))
+	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "start", "test-distributed"))
 	time.Sleep(timeInterval)
 }
 
 //gluster pool list
 func cleanGlusterCluster() {
-	pwd := currentPWD()
-	logrus.Print(cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "down"))
-	logrus.Print(cmd("docker", "volume", "rm", "-f", "glustercluster_brick-node-2", "glustercluster_brick-node-1", "glustercluster_brick-node-3", "glustercluster_state-node-1", "glustercluster_state-node-2", "glustercluster_state-node-3"))
+	logrus.Print("Cleaning up")
+	logrus.Print(dockerCompose("down"))
+	//logrus.Print(cmd("docker", "volume", "rm", "-f", "glustercluster_brick-node-2", "glustercluster_brick-node-1", "glustercluster_brick-node-3", "glustercluster_state-node-1", "glustercluster_state-node-2", "glustercluster_state-node-3"))
 	// extra clean up logrus.Print(cmd("docker", "volume", "prune", "-f"))
 	// full  extra clean up logrus.Print(cmd("docker", "system", "prune", "-af"))
+}
+
+func dockerCompose(arg ...string) (string, error) {
+	pwd := currentPWD()
+	args := append([]string{"-f", pwd + "/docker/gluster-cluster/docker-compose.yml", "--project-name", "test_inte_" + randomTestName}, arg...)
+	return cmd("docker-compose", args...)
 }
 
 func cmd(cmd string, arg ...string) (string, error) {
@@ -103,14 +109,14 @@ func cmd(cmd string, arg ...string) (string, error) {
 	return out.String(), err
 }
 
+//TODO cache result ?
 func currentPWD() string {
 	_, filename, _, _ := runtime.Caller(0)
 	return filepath.Dir(filename)
 }
 
 func getGlusterClusterContainers() []string {
-	pwd := currentPWD()
-	list, _ := cmd("docker-compose", "-f", pwd+"/docker/gluster-cluster/docker-compose.yml", "ps", "-q")
+	list, _ := dockerCompose("ps", "-q")
 	l := strings.Split(list, "\n")
 	return l[:len(l)-1]
 }
