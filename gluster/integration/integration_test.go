@@ -174,10 +174,14 @@ func TestIntegration(t *testing.T) {
 		{strconv.Itoa(rand.Int()), "distributed", gluster.PluginAlias, "test-distributed", IPs[:1], ""},
 		{strconv.Itoa(rand.Int()), "replica-double-server", gluster.PluginAlias, "test-replica", IPs[:2], ""},
 		{strconv.Itoa(rand.Int()), "distributed-double-server", gluster.PluginAlias, "test-distributed", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
 		{strconv.Itoa(rand.Int()), "managed-replica", "testing/plugin-gluster", "test-replica", IPs[:1], ""},
 		{strconv.Itoa(rand.Int()), "managed-distributed", "testing/plugin-gluster", "test-distributed", IPs[:1], ""},
 		{strconv.Itoa(rand.Int()), "managed-replica-double-server", "testing/plugin-gluster", "test-replica", IPs[:2], ""},
 		{strconv.Itoa(rand.Int()), "managed-distributed-double-server", "testing/plugin-gluster", "test-distributed", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "managed-replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "managed-distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
 	}
 
 	for _, tc := range testCases {
@@ -198,8 +202,18 @@ func TestIntegration(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to list mounted volume : %v", err)
 			}
-			if !strings.Contains(tc.name, "double") {
+			if !strings.Contains(tc.name, "double") && !strings.Contains(tc.name, "managed") {
 				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
+				logrus.Println(out)
+				if err != nil {
+					t.Errorf("Failed to write inside mounted volume : %v", err)
+				}
+				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/mkdir", "/mnt/subdir")
+				logrus.Println(out)
+				if err != nil {
+					t.Errorf("Failed to create dir inside mounted volume : %v", err)
+				}
+				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/subdir/container")
 				logrus.Println(out)
 				if err != nil {
 					t.Errorf("Failed to write inside mounted volume : %v", err)
