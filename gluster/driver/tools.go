@@ -21,7 +21,7 @@ func isValidURI(volURI string) bool {
 
 func parseVolURI(volURI string) string {
 	re := regexp.MustCompile(validVolUriRegex)
-	res := re.FindAllStringSubmatch(volParts[1], -1)
+	res := re.FindAllStringSubmatch(volURI, -1)
 	volServers := strings.Split(res[0][1], ",")
 	volumeId := res[0][2]
 	subDir := res[0][3]
