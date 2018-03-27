@@ -18,7 +18,7 @@ func TestIsValidURI(t *testing.T) {
 		{"test,volume", false},
 		{"test,test2:volume", true},
 		{"192.168.1.1:volume", true},
-		{"192.168.1.:volume", false},
+		{"192.168.1.:volume", true},
 		{"192.168.1.1,10.8.0.1:volume", true},
 		{"192.168.1.1,test2:volume", true},
 		{"192.168.1.1,test2:volume/subdir", true},
