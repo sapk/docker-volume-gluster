@@ -29,11 +29,6 @@ func TestMain(m *testing.M) {
 
 	randomTestName = strconv.Itoa(rand.Int())
 
-	//Setup managed plugin
-	setupManagedPlugin()
-	//Clean up
-	defer cleanManagedPlugin()
-
 	//Setup cluster
 	setupGlusterCluster()
 	//Clean up
@@ -160,6 +155,14 @@ func TestIntegration(t *testing.T) {
 	//Startplugin with empty config
 	go setupPlugin()
 	time.Sleep(3 * timeInterval)
+
+	if !testing.Short() {
+		//Setup managed plugin
+		setupManagedPlugin()
+		//Clean up
+		defer cleanManagedPlugin()
+	}
+
 	IPs := getGlusterClusterContainersIPs()
 
 	testCases := []struct {
@@ -182,6 +185,24 @@ func TestIntegration(t *testing.T) {
 		{strconv.Itoa(rand.Int()), "managed-distributed-double-server", "testing/plugin-gluster", "test-distributed", IPs[:2], ""},
 		{strconv.Itoa(rand.Int()), "managed-replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
 		{strconv.Itoa(rand.Int()), "managed-distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
+	}
+
+	if testing.Short() { //Disable managed volume
+		testCases = []struct {
+			id       string
+			name     string
+			driver   string
+			volume   string
+			servers  []string
+			hostname string
+		}{
+			{strconv.Itoa(rand.Int()), "replica", gluster.PluginAlias, "test-replica", IPs[:1], ""},
+			{strconv.Itoa(rand.Int()), "distributed", gluster.PluginAlias, "test-distributed", IPs[:1], ""},
+			{strconv.Itoa(rand.Int()), "replica-double-server", gluster.PluginAlias, "test-replica", IPs[:2], ""},
+			{strconv.Itoa(rand.Int()), "distributed-double-server", gluster.PluginAlias, "test-distributed", IPs[:2], ""},
+			{strconv.Itoa(rand.Int()), "replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
+			{strconv.Itoa(rand.Int()), "distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
+		}
 	}
 
 	for _, tc := range testCases {
