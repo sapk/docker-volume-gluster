@@ -1,24 +1,31 @@
 language: go
-sudo: true
-services:
-  - docker
+sudo: required
+dist: trusty
+os:
+- linux
 addons:
   apt:
     packages:
+    - fuse
+    - libfuse-dev
+    - pkg-config
     - upx-ucl
+    - glusterfs-client
+services:
+  - docker
 go:
   - "1.9"
   - "1.10"
   - "tip"
 
 before_install:
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then sudo modprobe fuse ; sudo chmod 666 /dev/fuse ; sudo chown root:$USER /etc/fuse.conf ; fi
+  - if [[ $TRAVIS_OS_NAME == osx ]]; then brew update && brew tap caskroom/cask && brew cask install osxfuse ; fi
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
-  - sudo apt-get install -qq pkg-config fuse
-  - sudo modprobe fuse
-  - sudo chmod 666 /dev/fuse
-  - sudo apt-get -y install docker-ce glusterfs-client
+  - sudo apt-get -y install docker-ce
+
 install:
   - make dev-deps
 
@@ -31,8 +38,8 @@ script:
 #  - sudo cat /var/log/glusterfs/*
   - ./docker-volume-gluster
 
-#after_success:
-#  - make test-coverage
+after_success:
+  - make test-coverage
 
 before_deploy:
   - make release
@@ -53,3 +60,5 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
+    go: "1.10"
+    condition: $TRAVIS_OS_NAME == linux && $TRAVIS_PULL_REQUEST == false
