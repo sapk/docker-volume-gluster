@@ -27,7 +27,7 @@ before_install:
   - sudo apt-get -y install docker-ce
 
 install:
-  - make dev-deps
+  - make deps
 
 script:
   - make lint
