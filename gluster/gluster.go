@@ -37,8 +37,8 @@ var (
 	//PluginAlias plugin alias name in docker
 	PluginAlias = "gluster"
 	//BaseDir of mounted volumes
-	BaseDir       = ""
-	fuseOpts      = ""
+	BaseDir = ""
+	//fuseOpts      = ""
 	mountUniqName = false
 	rootCmd       = &cobra.Command{
 		Use:              "docker-volume-gluster",
