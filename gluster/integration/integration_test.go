@@ -104,7 +104,7 @@ func setupGlusterCluster() {
 
 func cleanGlusterCluster() {
 	logrus.Print("Cleaning up")
-	logrus.Print(dockerCompose("down"))
+	logrus.Print(dockerCompose("down", "-v"))
 	//logrus.Print(cmd("docker", "volume", "rm", "-f", "glustercluster_brick-node-2", "glustercluster_brick-node-1", "glustercluster_brick-node-3", "glustercluster_state-node-1", "glustercluster_state-node-2", "glustercluster_state-node-3"))
 	// extra clean up logrus.Print(cmd("docker", "volume", "prune", "-f"))
 	// full  extra clean up logrus.Print(cmd("docker", "system", "prune", "-af"))
