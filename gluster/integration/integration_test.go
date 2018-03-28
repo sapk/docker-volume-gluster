@@ -153,6 +153,72 @@ func getGlusterClusterContainersIPs() []string {
 	return IPs
 }
 
+type testCase struct {
+	id       string
+	name     string
+	driver   string
+	volume   string
+	servers  []string
+	hostname string
+}
+
+func getTestData(t *testing.T, IPs []string) []testCase {
+	if testing.Short() { //Disable managed volume
+		return []testCase{
+			{strconv.Itoa(rand.Int()), "replica", gluster.PluginAlias, "test-replica", IPs[:1], ""},
+			{strconv.Itoa(rand.Int()), "distributed", gluster.PluginAlias, "test-distributed", IPs[:1], ""},
+			{strconv.Itoa(rand.Int()), "replica-double-server", gluster.PluginAlias, "test-replica", IPs[:2], ""},
+			{strconv.Itoa(rand.Int()), "distributed-double-server", gluster.PluginAlias, "test-distributed", IPs[:2], ""},
+			{strconv.Itoa(rand.Int()), "replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
+			{strconv.Itoa(rand.Int()), "distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
+		}
+	}
+	return []testCase{
+		{strconv.Itoa(rand.Int()), "replica", gluster.PluginAlias, "test-replica", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "distributed", gluster.PluginAlias, "test-distributed", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "replica-double-server", gluster.PluginAlias, "test-replica", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "distributed-double-server", gluster.PluginAlias, "test-distributed", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "managed-replica", "testing/plugin-gluster", "test-replica", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "managed-distributed", "testing/plugin-gluster", "test-distributed", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "managed-replica-double-server", "testing/plugin-gluster", "test-replica", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "managed-distributed-double-server", "testing/plugin-gluster", "test-distributed", IPs[:2], ""},
+		{strconv.Itoa(rand.Int()), "managed-replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
+		{strconv.Itoa(rand.Int()), "managed-distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
+	}
+}
+func testVolume(t *testing.T, tc *testCase) {
+	out, err := cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/ls", "/mnt")
+	logrus.Println(out)
+	if err != nil {
+		t.Errorf("Failed to list mounted volume : %v", err)
+	}
+	if !strings.Contains(tc.name, "double") && !strings.Contains(tc.name, "managed") {
+		out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
+		logrus.Println(out)
+		if err != nil {
+			t.Errorf("Failed to write inside mounted volume : %v", err)
+		}
+		out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/mkdir", "/mnt/subdir")
+		logrus.Println(out)
+		if err != nil {
+			t.Errorf("Failed to create dir inside mounted volume : %v", err)
+		}
+		out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/subdir/container")
+		logrus.Println(out)
+		if err != nil {
+			t.Errorf("Failed to write inside mounted volume : %v", err)
+		}
+	}
+	tc.hostname, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", "/mnt/container")
+	logrus.Println(out)
+	if err != nil {
+		t.Errorf("Failed to read from mounted volume : %v", err)
+	}
+	time.Sleep(3 * timeInterval)
+	//TODO check content is same
+}
 func TestIntegration(t *testing.T) {
 	//Startplugin with empty config
 	go setupPlugin()
@@ -167,45 +233,7 @@ func TestIntegration(t *testing.T) {
 
 	IPs := getGlusterClusterContainersIPs()
 
-	testCases := []struct {
-		id       string
-		name     string
-		driver   string
-		volume   string
-		servers  []string
-		hostname string
-	}{
-		{strconv.Itoa(rand.Int()), "replica", gluster.PluginAlias, "test-replica", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "distributed", gluster.PluginAlias, "test-distributed", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "replica-double-server", gluster.PluginAlias, "test-replica", IPs[:2], ""},
-		{strconv.Itoa(rand.Int()), "distributed-double-server", gluster.PluginAlias, "test-distributed", IPs[:2], ""},
-		{strconv.Itoa(rand.Int()), "replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "managed-replica", "testing/plugin-gluster", "test-replica", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "managed-distributed", "testing/plugin-gluster", "test-distributed", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "managed-replica-double-server", "testing/plugin-gluster", "test-replica", IPs[:2], ""},
-		{strconv.Itoa(rand.Int()), "managed-distributed-double-server", "testing/plugin-gluster", "test-distributed", IPs[:2], ""},
-		{strconv.Itoa(rand.Int()), "managed-replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
-		{strconv.Itoa(rand.Int()), "managed-distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
-	}
-
-	if testing.Short() { //Disable managed volume
-		testCases = []struct {
-			id       string
-			name     string
-			driver   string
-			volume   string
-			servers  []string
-			hostname string
-		}{
-			{strconv.Itoa(rand.Int()), "replica", gluster.PluginAlias, "test-replica", IPs[:1], ""},
-			{strconv.Itoa(rand.Int()), "distributed", gluster.PluginAlias, "test-distributed", IPs[:1], ""},
-			{strconv.Itoa(rand.Int()), "replica-double-server", gluster.PluginAlias, "test-replica", IPs[:2], ""},
-			{strconv.Itoa(rand.Int()), "distributed-double-server", gluster.PluginAlias, "test-distributed", IPs[:2], ""},
-			{strconv.Itoa(rand.Int()), "replica-subdir", gluster.PluginAlias, "test-replica/subdir", IPs[:1], ""},
-			{strconv.Itoa(rand.Int()), "distributed-subdir", gluster.PluginAlias, "test-distributed/subdir", IPs[:1], ""},
-		}
-	}
+	testCases := getTestData(t, IPs)
 
 	for _, tc := range testCases {
 		t.Run("Create volume for "+tc.name, func(t *testing.T) {
@@ -218,37 +246,9 @@ func TestIntegration(t *testing.T) {
 
 	logrus.Print(cmd("docker", os.Environ(), "volume", "ls"))
 
-	for i, tc := range testCases {
+	for _, tc := range testCases {
 		t.Run("Test volume "+tc.name, func(t *testing.T) {
-			out, err := cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/ls", "/mnt")
-			logrus.Println(out)
-			if err != nil {
-				t.Errorf("Failed to list mounted volume : %v", err)
-			}
-			if !strings.Contains(tc.name, "double") && !strings.Contains(tc.name, "managed") {
-				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
-				logrus.Println(out)
-				if err != nil {
-					t.Errorf("Failed to write inside mounted volume : %v", err)
-				}
-				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/mkdir", "/mnt/subdir")
-				logrus.Println(out)
-				if err != nil {
-					t.Errorf("Failed to create dir inside mounted volume : %v", err)
-				}
-				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/subdir/container")
-				logrus.Println(out)
-				if err != nil {
-					t.Errorf("Failed to write inside mounted volume : %v", err)
-				}
-			}
-			testCases[i].hostname, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", "/mnt/container")
-			logrus.Println(out)
-			if err != nil {
-				t.Errorf("Failed to read from mounted volume : %v", err)
-			}
-			time.Sleep(3 * timeInterval)
-			//TODO check content is same
+			testVolume(t, &tc)
 		})
 	}
 
@@ -256,12 +256,23 @@ func TestIntegration(t *testing.T) {
 		for _, td := range testCases {
 			if tc.volume == td.volume {
 				t.Run(fmt.Sprintf("Test same volume data between %s and %s", tc.name, td.name), func(t *testing.T) {
+					logrus.Println("DEBUG", tc.hostname, "==", td.hostname)
 					if tc.hostname != td.hostname {
 						t.Errorf("Content inside gluster %s volume in not the same : %s != %s", tc.volume, tc.hostname, td.hostname)
 					}
 				})
 			}
 		}
+	}
+
+	//Try to mount directly for checking content
+	logrus.Print(cmd("mkdir", os.Environ(), "/tmp/mount-inte-glusterfs"))
+	for _, tc := range testCases {
+		t.Run("Test mounted volume "+tc.name, func(t *testing.T) {
+			logrus.Print(cmd("mount", os.Environ(), "-t", "glusterfs", tc.servers[0]+":/"+tc.volume, "/tmp/mount-inte-glusterfs"))
+			logrus.Print(cmd("cat", os.Environ(), "/tmp/mount-inte-glusterfs/container"))
+			//TODO validate content
+		})
 	}
 	//TODO check persistence
 
