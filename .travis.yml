@@ -25,8 +25,6 @@ before_install:
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
   - sudo apt-get -y install docker-ce
-  - sudo mkdir -p /run/docker/plugins
-  - sudo chown root:$USER /run/docker/plugins
 
 install:
   - make deps
@@ -41,7 +39,7 @@ script:
   - ./docker-volume-gluster
 
 after_success:
-  - make test-coverage
+  - sudo make test-coverage
 
 before_deploy:
   - make release
