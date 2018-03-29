@@ -49,7 +49,7 @@ func mountVolume(d *basic.Driver, v driver.Volume, m driver.Mount, r *volume.Mou
 	//TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
 	if err := d.RunCmd(cmd); err != nil {
 		logdata, _ := ioutil.ReadFile(getGlusterLogPath(mpath)) //TODO handle error //TODO only read few last line
-		logrus.Debugf("Gluster log: \n %v", string(logdata))
+		logrus.Debugf("Gluster log %s : \n %v", getGlusterLogPath(mpath) ,string(logdata))
 		d.RunCmd("ls -lah /var/log/glusterfs") //TODO debug
 		return nil, err
 	}
@@ -58,5 +58,5 @@ func mountVolume(d *basic.Driver, v driver.Volume, m driver.Mount, r *volume.Mou
 
 
 func getGlusterLogPath(mpath string) string {
-	return fmt.Sprintf("/var/log/glusterfs/%s.log", strings.Replace(mpath, "/", "-", -1))
+	return fmt.Sprintf("/var/log/glusterfs/%s.log", strings.Replace(mpath, "/", "-", -1)[1:])
 }
