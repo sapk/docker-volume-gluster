@@ -163,7 +163,7 @@ type testCase struct {
 }
 
 func getTestData(t *testing.T, IPs []string) []testCase {
-	if os.Getenv("TRAVIS") == "true" {
+	if os.Getenv("TRAVIS") == "true" { //TODO find a way to use legacy mode in travis
 		return []testCase{
 			{strconv.Itoa(rand.Int()), "replica", "testing/plugin-gluster", "test-replica", IPs[:1], ""},
 			{strconv.Itoa(rand.Int()), "distributed", "testing/plugin-gluster", "test-distributed", IPs[:1], ""},
