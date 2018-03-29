@@ -163,16 +163,6 @@ type testCase struct {
 }
 
 func getTestData(t *testing.T, IPs []string) []testCase {
-	if os.Getenv("TRAVIS") == "true" { //TODO find a way to use legacy mode in travis
-		return []testCase{
-			{strconv.Itoa(rand.Int()), "replica", "testing/plugin-gluster", "test-replica", IPs[:1], ""},
-			{strconv.Itoa(rand.Int()), "distributed", "testing/plugin-gluster", "test-distributed", IPs[:1], ""},
-			{strconv.Itoa(rand.Int()), "replica-double-server", "testing/plugin-gluster", "test-replica", IPs[:2], ""},
-			{strconv.Itoa(rand.Int()), "distributed-double-server", "testing/plugin-gluster", "test-distributed", IPs[:2], ""},
-			{strconv.Itoa(rand.Int()), "replica-subdir", "testing/plugin-gluster", "test-replica/subdir", IPs[:1], ""},
-			{strconv.Itoa(rand.Int()), "distributed-subdir", "testing/plugin-gluster", "test-distributed/subdir", IPs[:1], ""},
-		}
-	}
 	if testing.Short() { //Disable managed volume
 		return []testCase{
 			{strconv.Itoa(rand.Int()), "replica", gluster.PluginAlias, "test-replica", IPs[:1], ""},
