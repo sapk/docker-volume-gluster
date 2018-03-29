@@ -50,7 +50,7 @@ func mountVolume(d *basic.Driver, v driver.Volume, m driver.Mount, r *volume.Mou
 		logrus.Debugf("Gluster log: \n %v", string(logdata))
 		return nil, err
 	}
-	return &volume.MountResponse{Mountpoint: m.GetPath(mpath)}, nil
+	return &volume.MountResponse{Mountpoint: mpath}, nil
 }
 
 
