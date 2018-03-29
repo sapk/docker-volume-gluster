@@ -41,11 +41,19 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 }
 
 func mountVolume(d *basic.Driver, v driver.Volume, m driver.Mount, r *volume.MountRequest) (*volume.MountResponse, error) {
-	cmd := fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetOptions()["voluri"]), m.GetPath())
+	mpath := m.GetPath()
+	cmd := fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetOptions()["voluri"]), mpath)
 	//cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.VolumeURI, m.Path)
 	//TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
 	if err := d.RunCmd(cmd); err != nil {
+		logdata, _ := ioutil.ReadFile(getGlusterLogPath(mpath)) //TODO handle error //TODO only read few last line
+		logrus.Debugf("Gluster log: \n %v", string(logdata))
 		return nil, err
 	}
-	return &volume.MountResponse{Mountpoint: m.GetPath()}, nil
+	return &volume.MountResponse{Mountpoint: m.GetPath(mpath)}, nil
+}
+
+
+func getGlusterLogPath(mpath string) string {
+	return fmt.Sprintf("/var/log/glusterfs/%s.log", strings.Replace(mpath, "/", "-", -1))
 }
