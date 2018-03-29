@@ -23,9 +23,11 @@ before_install:
   - if [[ $TRAVIS_OS_NAME == osx ]]; then brew update && brew tap caskroom/cask && brew cask install osxfuse ; fi
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - curl -fsSL http://download.gluster.org/pub/gluster/glusterfs/LATEST/rsa.pub | sudo apt-key add -
+  - sudo echo deb [arch=amd64] https://download.gluster.org/pub/gluster/glusterfs/4.0/LATEST/Debian/buster/amd64/apt buster main > /etc/apt/sources.list.d/gluster.list 
   - sudo apt-get update
-  - sudo apt-get -y install docker-ce
-
+  - sudo apt-get -y install docker-ce glusterfs-client
+  
 install:
   - make deps
 
