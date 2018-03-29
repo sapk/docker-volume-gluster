@@ -280,6 +280,7 @@ func TestIntegration(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("Test mounted volume "+tc.name, func(t *testing.T) {
 			logrus.Print(cmd("sudo", os.Environ(), "mount", "-t", "glusterfs", tc.servers[0]+":/"+tc.volume, "/tmp/mount-inte-glusterfs"))
+			logrus.Print(cmd("sudo", os.Environ(), "ls", "-lah", "/tmp/mount-inte-glusterfs"))
 			logrus.Print(cmd("sudo", os.Environ(), "cat", "/tmp/mount-inte-glusterfs/container"))
 			logrus.Print(cmd("sudo", os.Environ(), "umount", "/tmp/mount-inte-glusterfs"))
 			//TODO validate content
