@@ -288,21 +288,27 @@ func TestIntegration(t *testing.T) {
 	//TODO check persistence
 
 	for _, tc := range testCases {
-		out, err := cmd("docker", os.Environ(), "volume", "rm", tc.id)
-		if err != nil {
-			t.Errorf("Failed to remove mounted volume %s (%s) : %v", tc.name, tc.id, err)
-		}
-		if !strings.Contains(out, tc.id) { //TODO should be only "vol\n"
-			t.Errorf("Failed to remove mounted volume %s (%s)", tc.name, tc.id)
-		}
-		out, err = cmd("docker", os.Environ(), "volume", "ls", "-q")
-		if err != nil {
-			t.Errorf("Failed to list docker volume : %v", err)
-		}
-		if strings.Contains(out, tc.id) { //TODO should be "vol\n" to limit confussion ith other volume existing or generate name
-			t.Errorf("Failed to remove volume %s (%s) from volume list", tc.name, tc.id)
-		}
-		time.Sleep(3 * timeInterval)
+		t.Run("Clean volume "+tc.name, func(t *testing.T) {
+			cleanVolume(t, &tc)
+		})
 	}
 
+}
+
+func cleanVolume(t *testing.T, tc *testCase) {
+	out, err := cmd("docker", os.Environ(), "volume", "rm", tc.id)
+	if err != nil {
+		t.Errorf("Failed to remove mounted volume %s (%s) : %v", tc.name, tc.id, err)
+	}
+	if !strings.Contains(out, tc.id) { //TODO should be only "vol\n"
+		t.Errorf("Failed to remove mounted volume %s (%s)", tc.name, tc.id)
+	}
+	out, err = cmd("docker", os.Environ(), "volume", "ls", "-q")
+	if err != nil {
+		t.Errorf("Failed to list docker volume : %v", err)
+	}
+	if strings.Contains(out, tc.id) { //TODO should be "vol\n" to limit confusion with other volume existing or generate name
+		t.Errorf("Failed to remove volume %s (%s) from volume list", tc.name, tc.id)
+	}
+	time.Sleep(3 * timeInterval)
 }
