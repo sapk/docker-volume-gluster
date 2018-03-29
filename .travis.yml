@@ -39,7 +39,7 @@ script:
   - ./docker-volume-gluster
 
 after_success:
-  - sudo --preserve-env make test-coverage
+  - sudo --preserve-env bash c 'eval "$(gimme $TRAVIS_GO_VERSION)" && make test-coverage'
 
 before_deploy:
   - make release
