@@ -50,6 +50,7 @@ func mountVolume(d *basic.Driver, v driver.Volume, m driver.Mount, r *volume.Mou
 	if err := d.RunCmd(cmd); err != nil {
 		logdata, _ := ioutil.ReadFile(getGlusterLogPath(mpath)) //TODO handle error //TODO only read few last line
 		logrus.Debugf("Gluster log: \n %v", string(logdata))
+		d.RunCmd("ls -lah /var/log/glusterfs") //TODO debug
 		return nil, err
 	}
 	return &volume.MountResponse{Mountpoint: mpath}, nil
