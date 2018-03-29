@@ -1,7 +1,9 @@
 package driver
 
 import (
+	"io/ioutil"
 	"fmt"
+	"strings"
 
 	"github.com/sapk/docker-volume-helpers/basic"
 	"github.com/sapk/docker-volume-helpers/driver"
