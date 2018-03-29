@@ -39,7 +39,7 @@ script:
   - ./docker-volume-gluster
 
 after_success:
-  - sudo make test-coverage
+  - sudo --preserve-env make test-coverage
 
 before_deploy:
   - make release
