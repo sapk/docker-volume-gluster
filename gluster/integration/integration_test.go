@@ -194,6 +194,13 @@ func testVolume(t *testing.T, tc *testCase) {
 	if err != nil {
 		t.Errorf("Failed to list mounted volume : %v", err)
 	}
+
+	out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", randomTestName, "/mnt/write-test")
+	logrus.Println(out)
+	if err != nil {
+		t.Errorf("Failed to write inside mounted volume : %v", err)
+	}
+
 	if !strings.Contains(tc.name, "double") && !strings.Contains(tc.name, "managed") {
 		out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
 		logrus.Println(out)
@@ -211,10 +218,22 @@ func testVolume(t *testing.T, tc *testCase) {
 			t.Errorf("Failed to write inside mounted volume : %v", err)
 		}
 	}
+	rt, err := cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", "/mnt/write-test")
+	logrus.Println(out)
+	if err != nil {
+		t.Errorf("Failed to read from mounted volume : %v", err)
+	}
+	if rt != randomTestName {
+		t.Errorf("Failed to read from mounted volume wanted '%s' got '%s'", randomTestName, rt)
+	}
+
 	tc.hostname, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", "/mnt/container")
 	logrus.Println(out)
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume : %v", err)
+	}
+	if tc.hostname == "" {
+		t.Errorf("Failed to read from mounted volume wanted got empty string hostname '%s'", tc.hostname)
 	}
 	time.Sleep(3 * timeInterval)
 	//TODO check content is same
