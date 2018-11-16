@@ -153,15 +153,15 @@ lint: dev-deps
 
 dev-deps:
 	@echo -e "$(OK_COLOR)==> Installing developement dependencies...$(NO_COLOR)"
-	@go get github.com/nsf/gocode
-	@go get github.com/wadey/gocovmerge
+	@GO111MODULE=off go get github.com/nsf/gocode
+	@GO111MODULE=off go get github.com/wadey/gocovmerge
 	@GO111MODULE=off go get github.com/alecthomas/gometalinter
 	@GO111MODULE=off $(GOPATH)/bin/gometalinter --install > /dev/null
 
 update-dev-deps:
 	@echo -e "$(OK_COLOR)==> Installing/Updating developement dependencies...$(NO_COLOR)"
-	go get -u github.com/nsf/gocode
-	go get -u github.com/wadey/gocovmerge
+	GO111MODULE=off go get -u github.com/nsf/gocode
+	GO111MODULE=off go get -u github.com/wadey/gocovmerge
 	GO111MODULE=off go get -u github.com/alecthomas/gometalinter
 	GO111MODULE=off $(GOPATH)/bin/gometalinter --install --update
 
