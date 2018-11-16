@@ -6,10 +6,18 @@ addons:
   apt:
     packages:
     - upx-ucl
+
+os:
+  - linux
+#  - osx
+
 go:
-  - 1.9
   - "1.10"
   - "1.11"
+
+env:
+  - GO111MODULE=on
+>>>>>>> Migrate to go mod (#47)
 
 before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -19,6 +27,7 @@ before_install:
   - sudo modprobe fuse
   - sudo chmod 666 /dev/fuse
   - sudo apt-get -y install docker-ce glusterfs-client
+
 install:
   - make dev-deps
 
