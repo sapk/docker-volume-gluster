@@ -33,7 +33,7 @@ GOPATH ?= $(HOME)/go
 
 all: build compress done
 
-build: deps clean format compile
+build: clean format compile
 
 docker-plugin: docker-rootfs docker-plugin-create
 
@@ -69,7 +69,7 @@ compile:
 	@echo -e "$(OK_COLOR)==> Building...$(NO_COLOR)"
 	go build -v -ldflags "$(LDFLAGS)"
 
-release: clean deps format
+release: clean format
 	@mkdir build
 	@echo -e "$(OK_COLOR)==> Building for linux 32 ...$(NO_COLOR)"
 	CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o build/${APP_NAME}-linux-386 -ldflags "$(LDFLAGS)"
@@ -127,12 +127,12 @@ test: test-unit test-integration
 	$(GOPATH)/bin/gocovmerge coverage.unit.out coverage.inte.out > coverage.all
 #	go tool cover -html=coverage.all -o coverage.html
 
-test-unit: dev-deps deps format
+test-unit: dev-deps format
 	@echo -e "$(OK_COLOR)==> Running unit tests...$(NO_COLOR)"
 	go vet ./gluster/... || true
 	go test -v -race -coverprofile=coverage.unit.out -covermode=atomic ./gluster/driver
 
-test-integration: dev-deps deps format
+test-integration: dev-deps format
 	@echo -e "$(OK_COLOR)==> Running integration tests...$(NO_COLOR)"
 	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/... ./gluster/integration
 
