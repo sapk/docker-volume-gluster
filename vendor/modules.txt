@@ -1,0 +1,63 @@
+# github.com/Microsoft/go-winio v0.4.7
+github.com/Microsoft/go-winio
+# github.com/coreos/go-systemd v0.0.0-20180202092358-40e2722dffea
+github.com/coreos/go-systemd/activation
+# github.com/docker/go-connections v0.3.0
+github.com/docker/go-connections/sockets
+# github.com/docker/go-plugins-helpers v0.0.0-20180116160015-61cb8e233420
+github.com/docker/go-plugins-helpers/volume
+github.com/docker/go-plugins-helpers/sdk
+# github.com/fsnotify/fsnotify v1.4.7
+github.com/fsnotify/fsnotify
+# github.com/hashicorp/hcl v0.0.0-20180320202055-f40e974e75af
+github.com/hashicorp/hcl
+github.com/hashicorp/hcl/hcl/printer
+github.com/hashicorp/hcl/hcl/ast
+github.com/hashicorp/hcl/hcl/parser
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/hcl/scanner
+github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/json/scanner
+github.com/hashicorp/hcl/json/token
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/magiconair/properties v1.7.6
+github.com/magiconair/properties
+# github.com/mitchellh/mapstructure v0.0.0-20180220230111-00c29f56e238
+github.com/mitchellh/mapstructure
+# github.com/pelletier/go-toml v1.1.0
+github.com/pelletier/go-toml
+# github.com/sapk/docker-volume-helpers v0.0.0-20180326195556-7a90a1c14fd6
+github.com/sapk/docker-volume-helpers/basic
+github.com/sapk/docker-volume-helpers/driver
+# github.com/sirupsen/logrus v1.0.5
+github.com/sirupsen/logrus
+# github.com/spf13/afero v1.0.2
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/cast v1.2.0
+github.com/spf13/cast
+# github.com/spf13/cobra v0.0.1
+github.com/spf13/cobra
+# github.com/spf13/jwalterweatherman v0.0.0-20180109140146-7c0cea34c8ec
+github.com/spf13/jwalterweatherman
+# github.com/spf13/pflag v1.0.0
+github.com/spf13/pflag
+# github.com/spf13/viper v1.0.2
+github.com/spf13/viper
+# golang.org/x/crypto v0.0.0-20180322175230-88942b9c40a4
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/net v0.0.0-20180320002117-6078986fec03
+golang.org/x/net/idna
+golang.org/x/net/proxy
+# golang.org/x/sys v0.0.0-20180326154331-13d03a9a82fb
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/text v0.3.0
+golang.org/x/text/secure/bidirule
+golang.org/x/text/unicode/bidi
+golang.org/x/text/unicode/norm
+golang.org/x/text/transform
+# gopkg.in/yaml.v2 v2.2.0
+gopkg.in/yaml.v2
