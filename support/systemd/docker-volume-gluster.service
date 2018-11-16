@@ -1,0 +1,13 @@
+[Unit]
+Description=Docker Gluster Plugin
+Documentation=https://github.com/sapk/docker-volume-gluster
+Wants=network-online.target
+After=network-online.target
+Before=docker.service
+
+[Service]
+ExecStart=/usr/bin/docker-volume-gluster daemon
+StandardOutput=syslog
+
+[Install]
+WantedBy=multi-user.target

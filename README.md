@@ -89,6 +89,18 @@ Global Flags:
   -v, --verbose          Turns on verbose logging
 ```
 
+#### Start daemon with systemd
+
+This will enable execution of the daemon on bootup using systemd. On CentOS, this will require `glusterfs-fuse` package to be installed.  
+
+Extract the release file and copy the appropriate binary for your platform into `/usr/bin` and the [docker-volume-gluster.service](https://raw.githubusercontent.com/sapk/docker-volume-gluster/master/support/systemd/docker-volume-gluster.service) into `/etc/systemd/system`.  Then reload the daemon.  Use the following as a guide:
+
+```
+install -m 0755 -o root -g root /tmp/build/docker-volume-gluster-linux-amd64 /usr/bin/docker-volume-gluster
+install -m 0644 -o root -g root /tmp/build/docker-volume-gluster/docker-volume-gluster.service /etc/systemd/system
+systemctl daemon-reload
+```
+
 #### Create and Mount volume
 ```
 docker volume create --driver gluster --opt voluri="<volumeserver>:<volumename>" --name test
