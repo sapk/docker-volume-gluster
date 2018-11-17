@@ -46,5 +46,8 @@
     "network": {
         "type": "host"
     },
-    "propagatedmount": "/var/lib/docker-volumes/gluster"
+    "propagatedmount": "/var/lib/docker-volumes/gluster",
+    "Capabilities": {
+        "Scope": "global"
+    }
 }
