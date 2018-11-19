@@ -153,7 +153,7 @@ func Capabilities() *volume.CapabilitiesResponse {
 	log.Debugf("Entering Capabilities")
 	return &volume.CapabilitiesResponse{
 		Capabilities: volume.Capability{
-			Scope: "local",
+			Scope: "global",
 		},
 	}
 }
