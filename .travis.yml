@@ -9,7 +9,7 @@ addons:
 go:
   - 1.8
   - 1.9
-  - tip
+  - "1.10"
 
 before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
