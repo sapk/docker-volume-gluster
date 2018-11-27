@@ -5,7 +5,7 @@ WORKDIR /go/src/app
 
 RUN make build
 
-FROM debian:testing-slim
+FROM ubuntu
 MAINTAINER Antoine GIRARD <antoine.girard@sapk.fr>
 
 RUN apt-get update \
