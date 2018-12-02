@@ -120,7 +120,7 @@ compress:
 
 format:
 	@echo -e "$(OK_COLOR)==> Formatting...$(NO_COLOR)"
-	go fmt ./gluster/...
+	go fmt ./...
 
 test: test-unit test-integration
 	@echo -e "$(OK_COLOR)==> Running test...$(NO_COLOR)"
