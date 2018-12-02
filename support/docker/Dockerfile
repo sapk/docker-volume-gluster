@@ -14,7 +14,7 @@ RUN apt-get update \
  && apt-get autoclean -y && apt-get clean -y \
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build-env /go/src/app/docker-volume-gluster /usr/bin/docker-volume-gluster
+COPY --from=build-env /go/src/github.com/sapk/docker-volume-gluster/docker-volume-gluster /usr/bin/docker-volume-gluster
 
 RUN /usr/bin/docker-volume-gluster version
 
