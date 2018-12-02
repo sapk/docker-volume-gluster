@@ -22,7 +22,10 @@ func TestInit(t *testing.T) {
 	}
 	log.Println(d.Config)
 
-	d.SaveConfig()
+	err = d.SaveConfig()
+	if err != nil {
+		t.Error("Expected to be null, got ", err)
+	}
 	//Second reload should reload parsistence file
 	d2 := Init("/tmp/test-root", false)
 	if d2 == nil {

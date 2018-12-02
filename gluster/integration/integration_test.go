@@ -273,6 +273,9 @@ func TestIntegration(t *testing.T) {
 			t.Errorf("Failed to remove mounted volume %s (%s)", tc.name, tc.id)
 		}
 		out, err = cmd("docker", os.Environ(), "volume", "ls", "-q")
+		if err != nil {
+			t.Errorf("Failed to list volume : %v", err)
+		}
 		if strings.Contains(out, tc.id) { //TODO should be "vol\n" to limit confussion ith other volume existing or generate name
 			t.Errorf("Failed to remove volume %s (%s) from volume list", tc.name, tc.id)
 		}
