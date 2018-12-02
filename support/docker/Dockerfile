@@ -1,7 +1,7 @@
 FROM golang AS build-env
 
-COPY . /go/src/app
-WORKDIR /go/src/app
+COPY . /go/src/github.com/sapk/docker-volume-gluster
+WORKDIR /go/src/github.com/sapk/docker-volume-gluster
 
 RUN make build
 
