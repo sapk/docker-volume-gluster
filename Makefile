@@ -134,7 +134,7 @@ test-unit: dev-deps format
 
 test-integration: dev-deps format
 	@echo -e "$(OK_COLOR)==> Running integration tests...$(NO_COLOR)"
-	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/... ./gluster/integration
+	GO111MODULE=off go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic -coverpkg ./gluster/... ./gluster/integration
 
 test-coverage: test
 	@echo -e "$(OK_COLOR)==> Uploading coverage ...$(NO_COLOR)"
