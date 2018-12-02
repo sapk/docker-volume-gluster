@@ -44,6 +44,7 @@ func mountVolume(d *basic.Driver, v driver.Volume, m driver.Mount, r *volume.Mou
 	cmd := fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetOptions()["voluri"]), m.GetPath())
 	//cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.VolumeURI, m.Path)
 	//TODO fuseOpts   /usr/bin/mount -t glusterfs v.VolumeURI -o fuseOpts v.Mountpoint
+	log.Debug().Str("cmd", cmd).Msg("Mounting volume")
 	if err := d.RunCmd(cmd); err != nil {
 		return nil, err
 	}
