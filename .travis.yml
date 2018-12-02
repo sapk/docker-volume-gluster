@@ -17,7 +17,6 @@ go:
 
 env:
   - GO111MODULE=on
->>>>>>> Migrate to go mod (#47)
 
 before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
