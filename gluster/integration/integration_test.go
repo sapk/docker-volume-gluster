@@ -14,9 +14,10 @@ import (
 	"time"
 
 	"github.com/docker/go-plugins-helpers/volume"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/sapk/docker-volume-gluster/gluster"
 	"github.com/sapk/docker-volume-gluster/gluster/driver"
-	"github.com/sirupsen/logrus"
 )
 
 const timeInterval = 2 * time.Second
@@ -45,67 +46,67 @@ func setupPlugin() {
 	gluster.PluginAlias = "gluster-local-integration"
 	gluster.BaseDir = filepath.Join(volume.DefaultDockerRootDirectory, gluster.PluginAlias)
 	driver.CfgFolder = "/etc/docker-volumes/" + gluster.PluginAlias
-	logrus.Print(cmd("rm", os.Environ(), "-rf", driver.CfgFolder))
-	logrus.SetLevel(logrus.DebugLevel)
+	log.Print(cmd("rm", os.Environ(), "-rf", driver.CfgFolder))
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	gluster.DaemonStart(nil, []string{})
 	time.Sleep(timeInterval)
-	//logrus.Print(cmd("docker", "plugin", "ls"))
-	logrus.Print(cmd("docker", os.Environ(), "info", "-f", "{{.Plugins.Volume}}"))
+	//log.Print(cmd("docker", "plugin", "ls"))
+	log.Print(cmd("docker", os.Environ(), "info", "-f", "{{.Plugins.Volume}}"))
 }
 
 func setupManagedPlugin() {
 	//Build custom integration docker plugin
 	env := os.Environ()
 	env = append(env, fmt.Sprintf("PLUGIN_USER=%s", "testing"))
-	logrus.Print(cmd("make", env, "--directory=../../", "docker-plugin"))
-	logrus.Print(cmd("make", env, "--directory=../../", "docker-plugin-enable"))
+	log.Print(cmd("make", env, "--directory=../../", "docker-plugin"))
+	log.Print(cmd("make", env, "--directory=../../", "docker-plugin-enable"))
 }
 
 func cleanManagedPlugin() {
-	logrus.Print(cmd("docker", os.Environ(), "plugin", "disable", "testing/plugin-gluster"))
-	logrus.Print(cmd("docker", os.Environ(), "plugin", "rm", "testing/plugin-gluster"))
+	log.Print(cmd("docker", os.Environ(), "plugin", "disable", "testing/plugin-gluster"))
+	log.Print(cmd("docker", os.Environ(), "plugin", "rm", "testing/plugin-gluster"))
 }
 
 func setupGlusterCluster() {
-	logrus.Print(dockerCompose("up", "-d"))
+	log.Print(dockerCompose("up", "-d"))
 	time.Sleep(timeInterval)
 	nodes := []string{"node-1", "node-2", "node-3"}
 
 	for _, n := range nodes {
 		time.Sleep(timeInterval)
-		logrus.Print(dockerCompose("exec", "-T", n, "mkdir", "-p", "/brick"))
+		log.Print(dockerCompose("exec", "-T", n, "mkdir", "-p", "/brick"))
 	}
 
 	time.Sleep(timeInterval)
 	IPs := getGlusterClusterContainersIPs()
 	for _, ip := range IPs[1:] {
 		time.Sleep(timeInterval)
-		logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "peer", "probe", ip))
+		log.Print(dockerCompose("exec", "-T", "node-1", "gluster", "peer", "probe", ip))
 	}
 
 	time.Sleep(timeInterval)
-	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "pool", "list"))
-	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "peer", "status"))
+	log.Print(dockerCompose("exec", "-T", "node-1", "gluster", "pool", "list"))
+	log.Print(dockerCompose("exec", "-T", "node-1", "gluster", "peer", "status"))
 	time.Sleep(timeInterval)
 
-	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "create", "test-replica", "replica", "3", IPs[0]+":/brick/replica", IPs[1]+":/brick/replica", IPs[2]+":/brick/replica"))
+	log.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "create", "test-replica", "replica", "3", IPs[0]+":/brick/replica", IPs[1]+":/brick/replica", IPs[2]+":/brick/replica"))
 	time.Sleep(timeInterval)
-	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "create", "test-distributed", IPs[0]+":/brick/distributed", IPs[1]+":/brick/distributed", IPs[2]+":/brick/distributed"))
+	log.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "create", "test-distributed", IPs[0]+":/brick/distributed", IPs[1]+":/brick/distributed", IPs[2]+":/brick/distributed"))
 
 	time.Sleep(timeInterval)
-	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "start", "test-replica"))
+	log.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "start", "test-replica"))
 	time.Sleep(timeInterval)
-	logrus.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "start", "test-distributed"))
+	log.Print(dockerCompose("exec", "-T", "node-1", "gluster", "volume", "start", "test-distributed"))
 	time.Sleep(timeInterval)
 }
 
 func cleanGlusterCluster() {
-	logrus.Print("Cleaning up")
-	logrus.Print(dockerCompose("down"))
-	//logrus.Print(cmd("docker", "volume", "rm", "-f", "glustercluster_brick-node-2", "glustercluster_brick-node-1", "glustercluster_brick-node-3", "glustercluster_state-node-1", "glustercluster_state-node-2", "glustercluster_state-node-3"))
-	// extra clean up logrus.Print(cmd("docker", "volume", "prune", "-f"))
-	// full  extra clean up logrus.Print(cmd("docker", "system", "prune", "-af"))
+	log.Print("Cleaning up")
+	log.Print(dockerCompose("down"))
+	//log.Print(cmd("docker", "volume", "rm", "-f", "glustercluster_brick-node-2", "glustercluster_brick-node-1", "glustercluster_brick-node-3", "glustercluster_state-node-1", "glustercluster_state-node-2", "glustercluster_state-node-3"))
+	// extra clean up log.Print(cmd("docker", "volume", "prune", "-f"))
+	// full  extra clean up log.Print(cmd("docker", "system", "prune", "-af"))
 }
 
 func dockerCompose(arg ...string) (string, error) {
@@ -207,41 +208,41 @@ func TestIntegration(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run("Create volume for "+tc.name, func(t *testing.T) {
-			logrus.Print(cmd("docker", os.Environ(), "volume", "create", "--driver", tc.driver, "--opt", "voluri=\""+strings.Join(tc.servers, ",")+":"+tc.volume+"\"", tc.id))
+			log.Print(cmd("docker", os.Environ(), "volume", "create", "--driver", tc.driver, "--opt", "voluri=\""+strings.Join(tc.servers, ",")+":"+tc.volume+"\"", tc.id))
 			time.Sleep(timeInterval)
 		})
 		time.Sleep(3 * timeInterval)
 		//TODO test volume exist
 	}
 
-	logrus.Print(cmd("docker", os.Environ(), "volume", "ls"))
+	log.Print(cmd("docker", os.Environ(), "volume", "ls"))
 
 	for i, tc := range testCases {
 		t.Run("Test volume "+tc.name, func(t *testing.T) {
 			out, err := cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/ls", "/mnt")
-			logrus.Println(out)
+			log.Println(out)
 			if err != nil {
 				t.Errorf("Failed to list mounted volume : %v", err)
 			}
 			if !strings.Contains(tc.name, "double") && !strings.Contains(tc.name, "managed") {
 				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
-				logrus.Println(out)
+				log.Println(out)
 				if err != nil {
 					t.Errorf("Failed to write inside mounted volume : %v", err)
 				}
 				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/mkdir", "/mnt/subdir")
-				logrus.Println(out)
+				log.Println(out)
 				if err != nil {
 					t.Errorf("Failed to create dir inside mounted volume : %v", err)
 				}
 				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/subdir/container")
-				logrus.Println(out)
+				log.Println(out)
 				if err != nil {
 					t.Errorf("Failed to write inside mounted volume : %v", err)
 				}
 			}
 			testCases[i].hostname, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", "/mnt/container")
-			logrus.Println(out)
+			log.Println(out)
 			if err != nil {
 				t.Errorf("Failed to read from mounted volume : %v", err)
 			}

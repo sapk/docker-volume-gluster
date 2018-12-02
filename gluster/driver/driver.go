@@ -3,11 +3,11 @@ package driver
 import (
 	"fmt"
 
+	"github.com/rs/zerolog/log"
 	"github.com/sapk/docker-volume-helpers/basic"
 	"github.com/sapk/docker-volume-helpers/driver"
 
 	"github.com/docker/go-plugins-helpers/volume"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -24,7 +24,7 @@ type GlusterDriver = basic.Driver
 
 //Init start all needed deps and serve response to API call
 func Init(root string, mountUniqName bool) *GlusterDriver {
-	logrus.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
+	log.Debug().Msgf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
 	config := basic.DriverConfig{
 		Version: CfgVersion,
 		Root:    root,
