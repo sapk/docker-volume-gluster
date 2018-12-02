@@ -74,9 +74,9 @@ func Init() {
 //DaemonStart Start the deamon
 func DaemonStart(cmd *cobra.Command, args []string) {
 	d := driver.Init(BaseDir, mountUniqName)
-	log.Debug().Msg(d)
+	log.Debug().Msgf("Init driver: %v", d)
 	h := volume.NewHandler(d)
-	log.Debug().Msg(h)
+	log.Debug().Msgf("Init handler: %v", h)
 	err := h.ServeUnix(PluginAlias, 0)
 	if err != nil {
 		log.Debug().Err(err)

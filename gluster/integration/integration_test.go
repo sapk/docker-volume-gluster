@@ -220,29 +220,29 @@ func TestIntegration(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run("Test volume "+tc.name, func(t *testing.T) {
 			out, err := cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/ls", "/mnt")
-			log.Println(out)
+			log.Print(out)
 			if err != nil {
 				t.Errorf("Failed to list mounted volume : %v", err)
 			}
 			if !strings.Contains(tc.name, "double") && !strings.Contains(tc.name, "managed") {
 				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
-				log.Println(out)
+				log.Print(out)
 				if err != nil {
 					t.Errorf("Failed to write inside mounted volume : %v", err)
 				}
 				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/mkdir", "/mnt/subdir")
-				log.Println(out)
+				log.Print(out)
 				if err != nil {
 					t.Errorf("Failed to create dir inside mounted volume : %v", err)
 				}
 				out, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/subdir/container")
-				log.Println(out)
+				log.Print(out)
 				if err != nil {
 					t.Errorf("Failed to write inside mounted volume : %v", err)
 				}
 			}
 			testCases[i].hostname, err = cmd("docker", os.Environ(), "run", "--rm", "-t", "-v", tc.id+":/mnt", "alpine", "/bin/cat", "/mnt/container")
-			log.Println(out)
+			log.Print(out)
 			if err != nil {
 				t.Errorf("Failed to read from mounted volume : %v", err)
 			}
