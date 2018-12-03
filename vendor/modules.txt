@@ -33,7 +33,7 @@ github.com/rs/zerolog
 github.com/rs/zerolog/log
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
-# github.com/sapk/docker-volume-helpers v0.0.0-20181203000434-1552ff3c84f5
+# github.com/sapk/docker-volume-helpers v0.0.0-20181203012140-afb03797d7bf
 github.com/sapk/docker-volume-helpers/basic
 github.com/sapk/docker-volume-helpers/driver
 github.com/sapk/docker-volume-helpers/tools

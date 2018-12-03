@@ -148,7 +148,7 @@ func Unmount(d Driver, vName string) error {
 	}
 
 	if m.GetConnections() <= 1 {
-		cmd := fmt.Sprintf("/usr/bin/umount %s", m.GetPath())
+		cmd := fmt.Sprintf("/bin/umount %s", m.GetPath())
 		if err := d.RunCmd(cmd); err != nil {
 			return err
 		}

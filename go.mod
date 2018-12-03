@@ -10,7 +10,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2 // indirect
 	github.com/rs/zerolog v1.11.0
-	github.com/sapk/docker-volume-helpers v0.0.0-20181203000434-1552ff3c84f5
+	github.com/sapk/docker-volume-helpers v0.0.0-20181203012140-afb03797d7bf
 	github.com/spf13/cast v1.3.0 // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3 // indirect
