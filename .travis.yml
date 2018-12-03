@@ -34,6 +34,8 @@ before_install:
   - sudo modprobe fuse
   - sudo chmod 666 /dev/fuse
   - sudo apt-get -y install docker-ce glusterfs-client
+  - glusterfs --help
+  - glusterfs --usage
 
 install:
   - make dev-deps
