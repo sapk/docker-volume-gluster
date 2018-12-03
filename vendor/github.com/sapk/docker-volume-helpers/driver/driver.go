@@ -62,8 +62,9 @@ func getVolumeMount(d Driver, vName string) (Volume, Mount, error) {
 //List wrapper around github.com/docker/go-plugins-helpers/volume
 func List(d Driver) (*volume.ListResponse, error) {
 	log.Debug().Msgf("Entering List")
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
+	d.GetLock().RLock()
+	log.Debug().Msgf("Entering List: Read lock acquired")
+	defer d.GetLock().RUnlock()
 	var vols []*volume.Volume
 	for name, v := range d.GetVolumes() {
 		log.Debug().Msgf("Volume found: %s", v)
@@ -80,6 +81,7 @@ func List(d Driver) (*volume.ListResponse, error) {
 func Get(d Driver, vName string) (Volume, Mount, error) {
 	log.Debug().Msgf("Entering Get: name: %s", vName)
 	d.GetLock().RLock()
+	log.Debug().Msgf("Entering Get: Read lock acquired")
 	defer d.GetLock().RUnlock()
 	return getVolumeMount(d, vName)
 }
@@ -88,6 +90,7 @@ func Get(d Driver, vName string) (Volume, Mount, error) {
 func Remove(d Driver, vName string) error {
 	log.Debug().Msgf("Entering Remove: name: %s", vName)
 	d.GetLock().Lock()
+	log.Debug().Msgf("Entering Remove: ReadWrite lock acquired")
 	defer d.GetLock().Unlock()
 	v, m, err := getVolumeMount(d, vName)
 	if err != nil {
@@ -113,8 +116,9 @@ func Remove(d Driver, vName string) error {
 //MountExist wrapper around github.com/docker/go-plugins-helpers/volume
 func MountExist(d Driver, vName string) (Volume, Mount, error) {
 	log.Debug().Msgf("Entering MountExist: name: %s", vName)
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
+	d.GetLock().RLock()
+	log.Debug().Msgf("Entering MountExist: Read lock acquired")
+	defer d.GetLock().RUnlock()
 	return getVolumeMount(d, vName)
 }
 
@@ -136,6 +140,7 @@ func AddN(val int, oList ...increasable) {
 func Unmount(d Driver, vName string) error {
 	log.Debug().Msgf("Entering Unmount: name: %s", vName)
 	d.GetLock().Lock()
+	log.Debug().Msgf("Entering Unmount: ReadWrite lock acquired")
 	defer d.GetLock().Unlock()
 	v, m, err := getVolumeMount(d, vName)
 	if err != nil {
@@ -160,7 +165,7 @@ func Capabilities() *volume.CapabilitiesResponse {
 	log.Debug().Msgf("Entering Capabilities")
 	return &volume.CapabilitiesResponse{
 		Capabilities: volume.Capability{
-			Scope: "local",
+			Scope: "global",
 		},
 	}
 }
