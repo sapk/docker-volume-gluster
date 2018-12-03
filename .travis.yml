@@ -24,8 +24,8 @@ before_install:
   - curl -fsSL http://download.gluster.org/pub/gluster/glusterfs/3.10/rsa.pub | sudo apt-key add -
   - gpg --keyserver keyserver.ubuntu.com --recv 0x13E01B7B3FE869A9
   - gpg --export --armor 0x13E01B7B3FE869A9 | sudo apt-key add -
-#  - curl -fsSL https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x13E01B7B3FE869A9 | sudo apt-key add -
-  - sudo add-apt-repository "deb [arch=amd64] http://ppa.launchpad.net/gluster/glusterfs-3.10/ubuntu $(lsb_release -cs) main"
+  - sudo add-apt-repository "deb [arch=amd64] http://ppa.launchpad.net/gluster/glusterfs-3.13/ubuntu xenial main"
+#  - sudo add-apt-repository "deb [arch=amd64] http://ppa.launchpad.net/gluster/glusterfs-3.10/ubuntu $(lsb_release -cs) main"
 #  - sudo add-apt-repository ppa:gluster/glusterfs-3.10 #Maximum version with trusty builds
 #  - curl -fsSL http://download.gluster.org/pub/gluster/glusterfs/LATEST/rsa.pub | sudo apt-key add -
 #  - echo deb https://download.gluster.org/pub/gluster/glusterfs/LATEST/Debian/${DEBID}/${DEBARCH}/apt ${DEBVER} main > /etc/apt/sources.list.d/gluster.list
