@@ -21,6 +21,9 @@ env:
 before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo add-apt-repository ppa:gluster/glusterfs-3.10 #Maximum version with trusty builds
+#  - curl -fsSL http://download.gluster.org/pub/gluster/glusterfs/LATEST/rsa.pub | sudo apt-key add -
+#  - echo deb https://download.gluster.org/pub/gluster/glusterfs/LATEST/Debian/${DEBID}/${DEBARCH}/apt ${DEBVER} main > /etc/apt/sources.list.d/gluster.list
   - sudo apt-get update
   - sudo apt-get install -qq pkg-config fuse
   - sudo modprobe fuse
