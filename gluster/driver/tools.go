@@ -3,7 +3,6 @@ package driver
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -11,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -41,12 +40,12 @@ func (d *GlusterDriver) SaveConfig() error {
 	}
 	b, err := json.Marshal(GlusterPersistence{Version: CfgVersion, Volumes: d.volumes, Mounts: d.mounts})
 	if err != nil {
-		log.Warn("Unable to encode persistence struct, %v", err)
+		log.Warn().Msgf("Unable to encode persistence struct, %v", err)
 	}
 	//log.Debug("Writing persistence struct, %v", b, d.volumes)
 	err = ioutil.WriteFile(CfgFolder+"/persistence.json", b, 0600)
 	if err != nil {
-		log.Warn("Unable to write persistence struct, %v", err)
+		log.Warn().Msgf("Unable to write persistence struct, %v", err)
 		return fmt.Errorf("SaveConfig: %s", err)
 	}
 	return nil
@@ -54,12 +53,12 @@ func (d *GlusterDriver) SaveConfig() error {
 
 //RunCmd run deamon in context of this gvfs drive with custome env
 func (d *GlusterDriver) RunCmd(cmd string) error {
-	log.Debugf(cmd)
+	log.Debug().Msg(cmd)
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
-		log.Debugf("Error: %v", err)
+		log.Debug().Msgf("Error: %v", err)
 	}
-	log.Debugf("Output: %v", out)
+	log.Debug().Msgf("Output: %v", out)
 	return err
 }
 
@@ -79,19 +78,4 @@ func getMountName(d *GlusterDriver, r *volume.CreateRequest) string {
 		return url.PathEscape(r.Options["voluri"])
 	}
 	return url.PathEscape(r.Name)
-}
-
-//based on: http://stackoverflow.com/questions/30697324/how-to-check-if-directory-on-path-is-empty
-func isEmpty(name string) (bool, error) {
-	f, err := os.Open(name)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-
-	_, err = f.Readdirnames(1) // Or f.Readdir(1)
-	if err == io.EOF {
-		return true, nil
-	}
-	return false, err // Either not empty or error, suits both cases
 }

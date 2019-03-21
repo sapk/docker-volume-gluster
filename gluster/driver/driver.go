@@ -9,8 +9,8 @@ import (
 
 	"github.com/sapk/docker-volume-gluster/common"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -100,7 +100,7 @@ func (d *GlusterDriver) GetLock() *sync.RWMutex {
 
 //Init start all needed deps and serve response to API call
 func Init(root string, mountUniqName bool) *GlusterDriver {
-	log.Debugf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
+	log.Debug().Msgf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
 	d := &GlusterDriver{
 		root:          root,
 		mountUniqName: mountUniqName,
@@ -114,25 +114,25 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 	d.persitence.SetConfigType("json")
 	d.persitence.AddConfigPath(CfgFolder)
 	if err := d.persitence.ReadInConfig(); err != nil { // Handle errors reading the config file
-		log.Warn("No persistence file found, I will start with a empty list of volume.", err)
+		log.Warn().Msgf("No persistence file found, I will start with a empty list of volume.", err)
 	} else {
-		log.Debug("Retrieving volume list from persistence file.")
+		log.Debug().Msg("Retrieving volume list from persistence file.")
 
 		var version int
 		err := d.persitence.UnmarshalKey("version", &version)
 		if err != nil || version != CfgVersion {
-			log.Warn("Unable to decode version of persistence, %v", err)
+			log.Warn().Msgf("Unable to decode version of persistence, %v", err)
 			d.volumes = make(map[string]*GlusterVolume)
 			d.mounts = make(map[string]*GlusterMountpoint)
 		} else { //We have the same version
 			err := d.persitence.UnmarshalKey("volumes", &d.volumes)
 			if err != nil {
-				log.Warn("Unable to decode into struct -> start with empty list, %v", err)
+				log.Warn().Msgf("Unable to decode into struct -> start with empty list, %v", err)
 				d.volumes = make(map[string]*GlusterVolume)
 			}
 			err = d.persitence.UnmarshalKey("mounts", &d.mounts)
 			if err != nil {
-				log.Warn("Unable to decode into struct -> start with empty list, %v", err)
+				log.Warn().Msgf("Unable to decode into struct -> start with empty list, %v", err)
 				d.mounts = make(map[string]*GlusterMountpoint)
 			}
 		}
@@ -142,7 +142,7 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 
 //Create create and init the requested volume
 func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
-	log.Debugf("Entering Create: name: %s, options %v", r.Name, r.Options)
+	log.Debug().Msgf("Entering Create: name: %s, options %v", r.Name, r.Options)
 
 	if r.Options == nil || r.Options["voluri"] == "" {
 		return fmt.Errorf("voluri option required")
@@ -186,7 +186,7 @@ func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
 	}
 
 	d.volumes[r.Name] = v
-	log.Debugf("Volume Created: %v", v)
+	log.Debug().Msgf("Volume Created: %v", v)
 	if err := d.SaveConfig(); err != nil {
 		return err
 	}
@@ -223,7 +223,7 @@ func (d *GlusterDriver) Path(r *volume.PathRequest) (*volume.PathResponse, error
 
 //Mount mount the requested volume
 func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, error) {
-	log.Debugf("Entering Mount: %v", r)
+	log.Debug().Msgf("Entering Mount: %v", r)
 
 	v, m, err := common.MountExist(d, r.Name)
 	if err != nil {
