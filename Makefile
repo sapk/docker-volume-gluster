@@ -129,7 +129,7 @@ test: dev-deps format
 	@echo -e "$(OK_COLOR)==> Running tests...$(NO_COLOR)"
 	go vet ./gluster/... || true
 	go test -v -race -coverprofile=coverage.unit.out -covermode=atomic ./gluster/driver
-	go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic ./gluster/integration
+	#go test -v -timeout 1h -race -coverprofile=coverage.inte.out -covermode=atomic ./gluster/integration
 	gocovmerge `ls coverage.*.out` > coverage.out
 	go tool cover -html=coverage.out -o coverage.html
 
