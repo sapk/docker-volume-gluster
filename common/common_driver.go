@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
@@ -12,7 +13,7 @@ import (
 
 //Driver needed interface for some commons interactions
 type Driver interface {
-	GetLock() *sync.RWMutex
+	sync.Locker
 	GetVolumes() map[string]Volume
 	GetMounts() map[string]Mount
 	SaveConfig() error
@@ -25,12 +26,25 @@ type Volume interface {
 	GetMount() string
 	GetRemote() string
 	GetStatus() map[string]interface{}
+	GetCreatedAt() string
 }
 
 //Mount needed interface for some commons interactions
 type Mount interface {
 	increasable
 	GetPath() string
+}
+
+//IsMounted check if a mount is in /proc/mounts
+func IsMounted(m Mount) (bool, error) {
+	//TODO Better check for remote /var/lib/docker-volumes/rclone/mountpath fuse.rclone ro,nosuid,nodev,relatime,user_id=0,group_id=0 0 0
+	buf, err := ioutil.ReadFile("/proc/mounts")
+	if err != nil {
+		return false, err
+	}
+	//log.Debug().Msgf("isMounted Path: path: %s %v", m.GetPath(), strings.Contains(string(buf), " "+m.GetPath()+" fuse.rclone"))
+	//return strings.Contains(string(buf), " "+m.GetPath()+" fuse.rclone"), nil
+	return strings.Contains(string(buf), " "+m.GetPath()+" fuse"), nil
 }
 
 type increasable interface {
@@ -60,8 +74,9 @@ func getVolumeMount(d Driver, vName string) (Volume, Mount, error) {
 //List wrapper around github.com/docker/go-plugins-helpers/volume
 func List(d Driver) (*volume.ListResponse, error) {
 	log.Debug().Msgf("Entering List")
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
+	d.Lock()
+	defer d.Unlock()
+
 	var vols []*volume.Volume
 	for name, v := range d.GetVolumes() {
 		log.Debug().Msgf("Volume found: %s", v)
@@ -69,7 +84,7 @@ func List(d Driver) (*volume.ListResponse, error) {
 		if err != nil {
 			return nil, err
 		}
-		vols = append(vols, &volume.Volume{Name: name, Status: v.GetStatus(), Mountpoint: m.GetPath()})
+		vols = append(vols, &volume.Volume{Name: name, Status: v.GetStatus(), Mountpoint: m.GetPath(), CreatedAt: v.GetCreatedAt()})
 	}
 	return &volume.ListResponse{Volumes: vols}, nil
 }
@@ -77,39 +92,45 @@ func List(d Driver) (*volume.ListResponse, error) {
 //Get wrapper around github.com/docker/go-plugins-helpers/volume
 func Get(d Driver, vName string) (Volume, Mount, error) {
 	log.Debug().Msgf("Entering Get: name: %s", vName)
-	d.GetLock().RLock()
-	defer d.GetLock().RUnlock()
+	d.Lock()
+	defer d.Unlock()
 	return getVolumeMount(d, vName)
 }
 
 //Remove wrapper around github.com/docker/go-plugins-helpers/volume
 func Remove(d Driver, vName string) error {
 	log.Debug().Msgf("Entering Remove: name: %s", vName)
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
+	d.Lock()
+	defer d.Unlock()
 	v, m, err := getVolumeMount(d, vName)
 	if err != nil {
 		return err
 	}
+
+	//Unmount if needed
+	mounted, err := IsMounted(m)
+	if err != nil {
+		return err
+	}
+
 	if v.GetConnections() == 0 {
 		if m.GetConnections() == 0 {
-			if err := os.Remove(m.GetPath()); err != nil && !strings.Contains(err.Error(), "no such file or directory") {
-				return err
+			if mounted { //Only if mounted
+				if err := d.RunCmd(fmt.Sprintf("umount \"%s\"", m.GetPath())); err != nil {
+					return err
+				}
+			}
+			if _, err := os.Stat(m.GetPath()); !os.IsNotExist(err) {
+				//Remove mount point
+				if err := os.Remove(m.GetPath()); err != nil {
+					return err
+				}
 			}
 			delete(d.GetMounts(), v.GetMount())
 		}
 		delete(d.GetVolumes(), vName)
-		return d.SaveConfig()
 	}
-	return fmt.Errorf("volume %s is currently used by a container", vName)
-}
-
-//MountExist wrapper around github.com/docker/go-plugins-helpers/volume
-func MountExist(d Driver, vName string) (Volume, Mount, error) {
-	log.Debug().Msgf("Entering MountExist: name: %s", vName)
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
-	return getVolumeMount(d, vName)
+	return d.SaveConfig()
 }
 
 func SetN(val int, oList ...increasable) {
@@ -127,23 +148,30 @@ func AddN(val int, oList ...increasable) {
 //Unmount wrapper around github.com/docker/go-plugins-helpers/volume
 func Unmount(d Driver, vName string) error {
 	log.Debug().Msgf("Entering Unmount: name: %s", vName)
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
+	d.Lock()
+	defer d.Unlock()
 	v, m, err := getVolumeMount(d, vName)
 	if err != nil {
 		return err
 	}
 
-	if m.GetConnections() <= 1 {
-		cmd := fmt.Sprintf("/usr/bin/umount %s", m.GetPath())
-		if err := d.RunCmd(cmd); err != nil {
-			return err
-		}
-		SetN(0, m, v)
-	} else {
-		AddN(-1, m, v)
+	mounted, err := IsMounted(m)
+	if err != nil {
+		return err
 	}
-
+	if !mounted { //Force reset if not mounted
+		SetN(0, v, m)
+	} else {
+		if m.GetConnections() <= 1 {
+			cmd := fmt.Sprintf("umount %s", m.GetPath())
+			if err := d.RunCmd(cmd); err != nil {
+				return err
+			}
+			SetN(0, m, v)
+		} else {
+			AddN(-1, m, v)
+		}
+	}
 	return d.SaveConfig()
 }
 

@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/sapk/docker-volume-gluster/common"
+	"github.com/sapk/docker-volume-helpers/tools"
 
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/rs/zerolog/log"
@@ -44,6 +46,7 @@ type GlusterVolume struct {
 	VolumeURI   string `json:"voluri"`
 	Mount       string `json:"mount"`
 	Connections int    `json:"connections"`
+	CreatedAt   string `json:"created_at"`
 }
 
 func (v *GlusterVolume) GetMount() string {
@@ -64,13 +67,17 @@ func (v *GlusterVolume) SetConnections(n int) {
 
 func (v *GlusterVolume) GetStatus() map[string]interface{} {
 	return map[string]interface{}{
-		"TODO": "List",
+		//"TODO": "List",
 	}
+}
+
+func (v *GlusterVolume) GetCreatedAt() string {
+	return v.CreatedAt
 }
 
 //GlusterDriver the global driver responding to call
 type GlusterDriver struct {
-	lock          sync.RWMutex
+	sync.RWMutex
 	root          string
 	mountUniqName bool
 	persitence    *viper.Viper
@@ -94,10 +101,6 @@ func (d *GlusterDriver) GetMounts() map[string]common.Mount {
 	return mi
 }
 
-func (d *GlusterDriver) GetLock() *sync.RWMutex {
-	return &d.lock
-}
-
 //Init start all needed deps and serve response to API call
 func Init(root string, mountUniqName bool) *GlusterDriver {
 	log.Debug().Msgf("Init gluster driver at %s, UniqName: %v", root, mountUniqName)
@@ -114,7 +117,7 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 	d.persitence.SetConfigType("json")
 	d.persitence.AddConfigPath(CfgFolder)
 	if err := d.persitence.ReadInConfig(); err != nil { // Handle errors reading the config file
-		log.Warn().Msgf("No persistence file found, I will start with a empty list of volume.", err)
+		log.Warn().Err(err).Msg("No persistence file found, I will start with a empty list of volume")
 	} else {
 		log.Debug().Msg("Retrieving volume list from persistence file.")
 
@@ -127,12 +130,12 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 		} else { //We have the same version
 			err := d.persitence.UnmarshalKey("volumes", &d.volumes)
 			if err != nil {
-				log.Warn().Msgf("Unable to decode into struct -> start with empty list, %v", err)
+				log.Warn().Err(err).Msg("Unable to decode into struct -> start with empty list")
 				d.volumes = make(map[string]*GlusterVolume)
 			}
 			err = d.persitence.UnmarshalKey("mounts", &d.mounts)
 			if err != nil {
-				log.Warn().Msgf("Unable to decode into struct -> start with empty list, %v", err)
+				log.Warn().Err(err).Msg("Unable to decode into struct -> start with empty list")
 				d.mounts = make(map[string]*GlusterMountpoint)
 			}
 		}
@@ -143,6 +146,8 @@ func Init(root string, mountUniqName bool) *GlusterDriver {
 //Create create and init the requested volume
 func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
 	log.Debug().Msgf("Entering Create: name: %s, options %v", r.Name, r.Options)
+	d.Lock()
+	defer d.Unlock()
 
 	if r.Options == nil || r.Options["voluri"] == "" {
 		return fmt.Errorf("voluri option required")
@@ -152,13 +157,11 @@ func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
 		return fmt.Errorf("voluri option is malformated")
 	}
 
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
-
 	v := &GlusterVolume{
 		VolumeURI:   r.Options["voluri"],
 		Mount:       getMountName(d, r),
 		Connections: 0,
+		CreatedAt:   time.Now().Format(time.RFC3339),
 	}
 
 	if _, ok := d.mounts[v.Mount]; !ok { //This mountpoint doesn't allready exist -> create it
@@ -175,22 +178,19 @@ func (d *GlusterDriver) Create(r *volume.CreateRequest) error {
 		} else if err != nil {
 			return err
 		}
-		isempty, err := isEmpty(m.Path)
+		isempty, err := tools.FolderIsEmpty(m.Path)
 		if err != nil {
 			return err
 		}
 		if !isempty {
-			return fmt.Errorf("%v already exist and is not empty !", m.Path)
+			return fmt.Errorf("%v already exist and is not empty", m.Path)
 		}
 		d.mounts[v.Mount] = m
 	}
 
 	d.volumes[r.Name] = v
 	log.Debug().Msgf("Volume Created: %v", v)
-	if err := d.SaveConfig(); err != nil {
-		return err
-	}
-	return nil
+	return d.SaveConfig()
 }
 
 //List volumes handled by these driver
@@ -204,7 +204,7 @@ func (d *GlusterDriver) Get(r *volume.GetRequest) (*volume.GetResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &volume.GetResponse{Volume: &volume.Volume{Name: r.Name, Status: v.GetStatus(), Mountpoint: m.GetPath()}}, nil
+	return &volume.GetResponse{Volume: &volume.Volume{Name: r.Name, Status: v.GetStatus(), Mountpoint: m.GetPath(), CreatedAt: v.GetCreatedAt()}}, nil
 }
 
 //Remove remove the requested volume
@@ -224,17 +224,28 @@ func (d *GlusterDriver) Path(r *volume.PathRequest) (*volume.PathResponse, error
 //Mount mount the requested volume
 func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, error) {
 	log.Debug().Msgf("Entering Mount: %v", r)
+	d.Lock()
+	defer d.Unlock()
 
-	v, m, err := common.MountExist(d, r.Name)
+	v, m, err := common.Get(d, r.Name)
 	if err != nil {
 		return nil, err
 	}
-	if m != nil && m.GetConnections() > 0 {
-		return &volume.MountResponse{Mountpoint: m.GetPath()}, nil
-	}
 
-	d.GetLock().Lock()
-	defer d.GetLock().Unlock()
+	ready, err := common.IsMounted(m)
+	if err != nil {
+		return nil, err
+	}
+	if ready {
+		common.AddN(1, v, m)
+		if err := d.SaveConfig(); err != nil {
+			return nil, err
+		}
+		return &volume.MountResponse{Mountpoint: m.GetPath()}, nil
+	} else {
+		//Reset (maybe a reboot)
+		common.SetN(0, v, m)
+	}
 
 	cmd := fmt.Sprintf("glusterfs %s %s", parseVolURI(v.GetRemote()), m.GetPath())
 	//cmd := fmt.Sprintf("/usr/bin/mount -t glusterfs %s %s", v.VolumeURI, m.Path)
@@ -242,9 +253,13 @@ func (d *GlusterDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, er
 	if err := d.RunCmd(cmd); err != nil {
 		return nil, err
 	}
-	//time.Sleep(3 * time.Second)
+
+	time.Sleep(3 * time.Second)
 	common.AddN(1, v, m)
-	return &volume.MountResponse{Mountpoint: m.GetPath()}, d.SaveConfig()
+	if err := d.SaveConfig(); err != nil {
+		return nil, err
+	}
+	return &volume.MountResponse{Mountpoint: m.GetPath()}, nil
 }
 
 //Unmount unmount the requested volume

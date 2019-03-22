@@ -53,13 +53,24 @@ func (d *GlusterDriver) SaveConfig() error {
 
 //RunCmd run deamon in context of this gvfs drive with custome env
 func (d *GlusterDriver) RunCmd(cmd string) error {
+	/*
+		log.Debug().Msg(cmd)
+		out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
+		if err != nil {
+			log.Debug().Msgf("Error: %v", err)
+		}
+		log.Debug().Msgf("Output: %v", out)
+		return err
+	*/
 	log.Debug().Msg(cmd)
-	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
-	if err != nil {
-		log.Debug().Msgf("Error: %v", err)
-	}
-	log.Debug().Msgf("Output: %v", out)
-	return err
+	/*
+		cli := exec.Command("/bin/bash", "-c", cmd)
+		stdoutStderr, err := cli.CombinedOutput()
+		log.Debugf("%s", stdoutStderr)
+		return err
+	*/
+	return exec.Command("/bin/bash", "-c", cmd).Run()
+	//TODO output log
 }
 
 func isValidURI(volURI string) bool {
