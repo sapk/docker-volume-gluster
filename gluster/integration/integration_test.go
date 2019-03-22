@@ -137,69 +137,69 @@ func TestIntegration(t *testing.T) {
 
 	IPs := getGlusterClusterContainersIPs()
 
-	cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+IPs[0]+":test-replica\"", "replica"))
+	cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+IPs[0]+":test-replica\"", "replica")
 	time.Sleep(timeInterval)
-	cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+IPs[0]+":test-distributed\"", "distributed"))
+	cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+IPs[0]+":test-distributed\"", "distributed")
 	time.Sleep(timeInterval)
-	cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+IPs[0]+","+IPs[1]+":test-replica\"", "replica-double-server"))
+	cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+IPs[0]+","+IPs[1]+":test-replica\"", "replica-double-server")
 	time.Sleep(timeInterval)
-	cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+IPs[0]+","+IPs[1]+":test-distributed\"", "distributed-double-server"))
+	cmd("docker", "volume", "create", "--driver", gluster.PluginAlias, "--opt", "voluri=\""+IPs[0]+","+IPs[1]+":test-distributed\"", "distributed-double-server")
 	time.Sleep(timeInterval)
-	cmd("docker", "volume", "ls"))
+	cmd("docker", "volume", "ls")
 	time.Sleep(3 * timeInterval)
 	//TODO docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>:<volumename>" --name test
 
 	out, err := cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/ls", "/mnt")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to list mounted volume : %v", err)
 	}
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to write inside mounted volume : %v", err)
 	}
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica:/mnt", "alpine", "/bin/cat", "/mnt/container")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume : %v", err)
 	}
 	time.Sleep(3 * timeInterval)
 
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/ls", "/mnt")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to list mounted volume : %v", err)
 	}
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cp", "/etc/hostname", "/mnt/container")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to write inside mounted volume : %v", err)
 	}
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed:/mnt", "alpine", "/bin/cat", "/mnt/container")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume : %v", err)
 	}
 	time.Sleep(3 * timeInterval)
 
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/ls", "/mnt")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to list mounted volume (with fallback) : %v", err)
 	}
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "replica-double-server:/mnt", "alpine", "/bin/cat", "/mnt/container")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume (with fallback) : %v", err)
 	}
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed-double-server:/mnt", "alpine", "/bin/ls", "/mnt")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to list mounted volume (with fallback) : %v", err)
 	}
 	out, err = cmd("docker", "run", "--rm", "-t", "-v", "distributed-double-server:/mnt", "alpine", "/bin/cat", "/mnt/container")
-	log.Info().Msgln(out)
+	log.Info().Msg(out)
 	if err != nil {
 		t.Errorf("Failed to read from mounted volume (with fallback) : %v", err)
 	}
