@@ -1,4 +1,4 @@
-# docker-volume-gluster [![License](https://img.shields.io/badge/license-MIT-red.svg)](https://github.com/sapk/docker-volume-gluster/blob/master/LICENSE) ![Project Status](http://img.shields.io/badge/status-alpha-red.svg)
+# docker-volume-gluster [![License](https://img.shields.io/badge/license-MIT-red.svg)](https://github.com/sapk/docker-volume-gluster/blob/master/LICENSE) ![Project Status](http://img.shields.io/badge/status-beta-orange.svg)
 [![GitHub release](https://img.shields.io/github/release/sapk/docker-volume-gluster.svg)](https://github.com/sapk/docker-volume-gluster/releases) [![Go Report Card](https://goreportcard.com/badge/github.com/sapk/docker-volume-gluster)](https://goreportcard.com/report/github.com/sapk/docker-volume-gluster)
 [![codecov](https://codecov.io/gh/sapk/docker-volume-gluster/branch/master/graph/badge.svg)](https://codecov.io/gh/sapk/docker-volume-gluster)
  master : [![Travis master](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=master)](https://travis-ci.org/sapk/docker-volume-gluster) develop : [![Travis develop](https://api.travis-ci.org/sapk/docker-volume-gluster.svg?branch=develop)](https://travis-ci.org/sapk/docker-volume-gluster)
@@ -6,7 +6,7 @@
 
 Use GlusterFS as a backend for docker volume
 
-Status : **proof of concept (working)**
+Status : **beta (working)**
 
 Use GlusterFS cli in the plugin container so it depend on fuse on the host.
 
@@ -19,7 +19,7 @@ docker run -v test:/mnt --rm -ti ubuntu
 
 ## Create and Mount volume
 ```
-docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>,<otherserver>,<otheroptionalserver>:<volumename>" --name test
+docker volume create --driver sapk/plugin-gluster --opt voluri="<volumeserver>,<otherserver>,<otheroptionalserver>:<volumename></optional/sub/dir>" --name test
 docker run -v test:/mnt --rm -ti ubuntu
 ```
 
@@ -29,7 +29,7 @@ volumes:
   some_vol:
     driver: sapk/plugin-gluster
     driver_opts:
-      voluri: "<volumeserver>:<volumename>"
+      voluri: "<volumeserver>:<volumename></optional/sub/dir>"
 ```
 
 
@@ -41,6 +41,13 @@ docker plugin set sapk/plugin-gluster DEBUG=1 #Activate --verbose
 docker plugin set sapk/plugin-gluster MOUNT_UNIQ=1 #Activate --mount-uniq
 
 docker plugin enable sapk/plugin-gluster
+```
+
+## Install specific version
+```
+docker plugin install sapk/plugin-gluster:v1.0.11
+
+# Full list of available tags : https://hub.docker.com/r/sapk/plugin-gluster/tags/
 ```
 
 
@@ -80,6 +87,18 @@ Flags:
 Global Flags:
   -b, --basedir string   Mounted volume base directory (default "/var/lib/docker-volumes/gluster")
   -v, --verbose          Turns on verbose logging
+```
+
+#### Start daemon with systemd
+
+This will enable execution of the daemon on bootup using systemd. On CentOS, this will require `glusterfs-fuse` package to be installed.  
+
+Extract the release file and copy the appropriate binary for your platform into `/usr/bin` and the [docker-volume-gluster.service](https://raw.githubusercontent.com/sapk/docker-volume-gluster/master/support/systemd/docker-volume-gluster.service) into `/etc/systemd/system`.  Then reload the daemon.  Use the following as a guide:
+
+```
+install -m 0755 -o root -g root /tmp/build/docker-volume-gluster-linux-amd64 /usr/bin/docker-volume-gluster
+install -m 0644 -o root -g root /tmp/build/docker-volume-gluster/docker-volume-gluster.service /etc/systemd/system
+systemctl daemon-reload
 ```
 
 #### Create and Mount volume

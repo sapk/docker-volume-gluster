@@ -6,19 +6,37 @@ addons:
   apt:
     packages:
     - upx-ucl
+
+os:
+  - linux
+#  - osx
+
 go:
-  - 1.8
-  - 1.9
   - "1.10"
+  - "1.11"
+
+env:
+  - GO111MODULE=on
 
 before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - curl -fsSL http://download.gluster.org/pub/gluster/glusterfs/3.10/rsa.pub | sudo apt-key add -
+  - gpg --keyserver keyserver.ubuntu.com --recv 0x13E01B7B3FE869A9
+  - gpg --export --armor 0x13E01B7B3FE869A9 | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] http://ppa.launchpad.net/gluster/glusterfs-3.13/ubuntu xenial main"
+#  - sudo add-apt-repository "deb [arch=amd64] http://ppa.launchpad.net/gluster/glusterfs-3.10/ubuntu $(lsb_release -cs) main"
+#  - sudo add-apt-repository ppa:gluster/glusterfs-3.10 #Maximum version with trusty builds
+#  - curl -fsSL http://download.gluster.org/pub/gluster/glusterfs/LATEST/rsa.pub | sudo apt-key add -
+#  - echo deb https://download.gluster.org/pub/gluster/glusterfs/LATEST/Debian/${DEBID}/${DEBARCH}/apt ${DEBVER} main > /etc/apt/sources.list.d/gluster.list
   - sudo apt-get update
   - sudo apt-get install -qq pkg-config fuse
   - sudo modprobe fuse
   - sudo chmod 666 /dev/fuse
   - sudo apt-get -y install docker-ce glusterfs-client
+  - glusterfs --help
+  - glusterfs --usage
+
 install:
   - make dev-deps
 
@@ -26,16 +44,15 @@ script:
   - make lint
   - make build
   - make test-unit
-#  - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" && make test'
+  - sudo -E bash -c 'eval "$(gimme $TRAVIS_GO_VERSION)" && make test-integration'
 #  - sudo ls -lah /var/log/glusterfs/
 #  - sudo cat /var/log/glusterfs/*
   - ./docker-volume-gluster
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -f coverage.*
+  - make test-coverage
 
 before_deploy:
-  - make compress
   - make release
   - docker --version
   - make docker-plugin
@@ -50,7 +67,6 @@ deploy:
     secure: SAD6luuJhgzS7ZavymCxLaTlCbxp9VQax0uf4ozWByt0uwsLKtDM4Je4c9z9bx40PmEBKOpSoso4umL4AcY1yrQ2UTMJD+GxedmqDnge2ibfhHZMTxeDkLF3JLsACfQmibNzN/+b9nNdgyzQYnB4+OvKOmEvtHWwNP7qOuU+9QTNK/rNt5MBXk29aJFL1/t3oIvCfHl1D96pssE6uVURcXiPGkgNcSLBUewYwPwqjGqgG/xu/lgQEwpW6AE4OfwJLpdGMR/V1DUNMNs47Gt7Vh+PBRm/M7cZUYyc+CRuXuSM+PKr9xlH8mFHu6IrcM4n5Sy94A7ldB5dfn9HA+WLXEOhSej3NB06sFkjITnKSWCVCGVzzXuH5CMiwBDRKmhFLunFe9Wcz52W2wIumesaNuZOm9LbiBV47UicggeiZkhar1tvjQoFgw6R57+Wxdhdon7fwVO3euRSH7fm0RyEN1PgO92U5/gHgOO+Khlsl3GPqWNgyqeh0Ej4Ke9mFB0VjO+a8uNAQlrp+v94kQSWqpXUD30/fnZhu+sBURJ1pikH/WAhcnKEvYk7Kq5/kSuYqO0dxxEDrHh00Gwo/uHhhnOp3BNe/v1/TseSS4FOxaLrbTKCDRU+B38bsi8FoZ7J68xK9dT19TF+6ZXqka1LNIyV4ITCjkRenHMfCWWrF78=
   file_glob: true
   file:
-    - "./docker-volume-gluster"
     - build/*.tar.gz
   skip_cleanup: true
   on:

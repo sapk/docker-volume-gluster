@@ -1,97 +1,56 @@
 package driver
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/url"
-	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
+	"github.com/sapk/docker-volume-helpers/basic"
+	"golang.org/x/net/idna"
 )
 
 const (
-	validHostnameRegex = `(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])`
+	validHostnameRegex = `(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9\-])\.)*([A-Za-z0-9\-]|[A-Za-z0-9\-][A-Za-z0-9\-]*[A-Za-z0-9\-])`
+	validVolURIRegex   = `((` + validHostnameRegex + `)(,` + validHostnameRegex + `)*):\/?([^\/]+)(/.+)?`
 )
 
-//GlusterPersistence represent struct of persistence file
-type GlusterPersistence struct {
-	Version int                           `json:"version"`
-	Volumes map[string]*GlusterVolume     `json:"volumes"`
-	Mounts  map[string]*GlusterMountpoint `json:"mounts"`
-}
-
-//SaveConfig stroe config/state in file  //TODO put inside common
-func (d *GlusterDriver) SaveConfig() error {
-	fi, err := os.Lstat(CfgFolder)
-	if os.IsNotExist(err) {
-		if err = os.MkdirAll(CfgFolder, 0700); err != nil {
-			return fmt.Errorf("SaveConfig: %s", err)
-		}
-	} else if err != nil {
-		return fmt.Errorf("SaveConfig: %s", err)
-	}
-	if fi != nil && !fi.IsDir() {
-		return fmt.Errorf("SaveConfig: %v already exist and it's not a directory", d.root)
-	}
-	b, err := json.Marshal(GlusterPersistence{Version: CfgVersion, Volumes: d.volumes, Mounts: d.mounts})
-	if err != nil {
-		log.Warn("Unable to encode persistence struct, %v", err)
-	}
-	//log.Debug("Writing persistence struct, %v", b, d.volumes)
-	err = ioutil.WriteFile(CfgFolder+"/persistence.json", b, 0600)
-	if err != nil {
-		log.Warn("Unable to write persistence struct, %v", err)
-		return fmt.Errorf("SaveConfig: %s", err)
-	}
-	return nil
-}
-
-//RunCmd run deamon in context of this gvfs drive with custome env
-func (d *GlusterDriver) RunCmd(cmd string) error {
-	log.Debugf(cmd)
-	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
-	if err != nil {
-		log.Debugf("Error: %v", err)
-	}
-	log.Debugf("Output: %v", out)
-	return err
-}
-
 func isValidURI(volURI string) bool {
-	re := regexp.MustCompile(validHostnameRegex + ":.+")
+	volURI, err := idna.ToASCII(volURI)
+	if err != nil {
+		return false
+	}
+	re := regexp.MustCompile(validVolURIRegex)
 	return re.MatchString(volURI)
 }
 
 func parseVolURI(volURI string) string {
-	volParts := strings.Split(volURI, ":")
-	volServers := strings.Split(volParts[0], ",")
-	return fmt.Sprintf("--volfile-id='%s' -s '%s'", volParts[1], strings.Join(volServers, "' -s '"))
+	volURI, _ = idna.ToASCII(volURI)
+	re := regexp.MustCompile(validVolURIRegex)
+	res := re.FindAllStringSubmatch(volURI, -1)
+	volServers := strings.Split(res[0][1], ",")
+	volumeID := res[0][10]
+	subDir := res[0][11]
+
+	if subDir == "" {
+		return fmt.Sprintf("--volfile-id='%s' -s '%s'", volumeID, strings.Join(volServers, "' -s '"))
+	}
+	return fmt.Sprintf("--volfile-id='%s' --subdir-mount='%s' -s '%s'", volumeID, subDir, strings.Join(volServers, "' -s '"))
 }
 
-func getMountName(d *GlusterDriver, r *volume.CreateRequest) string {
-	if d.mountUniqName {
-		return url.PathEscape(r.Options["voluri"])
+//GetMountName get moint point base on request and driver config (mountUniqName)
+func GetMountName(d *basic.Driver, r *volume.CreateRequest) (string, error) {
+	if r.Options == nil || r.Options["voluri"] == "" {
+		return "", fmt.Errorf("voluri option required")
 	}
-	return url.PathEscape(r.Name)
-}
+	r.Options["voluri"] = strings.Trim(r.Options["voluri"], "\"")
+	if !isValidURI(r.Options["voluri"]) {
+		return "", fmt.Errorf("voluri option is malformated")
+	}
 
-//based on: http://stackoverflow.com/questions/30697324/how-to-check-if-directory-on-path-is-empty
-func isEmpty(name string) (bool, error) {
-	f, err := os.Open(name)
-	if err != nil {
-		return false, err
+	if d.Config.CustomOptions["mountUniqName"].(bool) {
+		return url.PathEscape(r.Options["voluri"]), nil
 	}
-	defer f.Close()
-
-	_, err = f.Readdirnames(1) // Or f.Readdir(1)
-	if err == io.EOF {
-		return true, nil
-	}
-	return false, err // Either not empty or error, suits both cases
+	return url.PathEscape(r.Name), nil
 }

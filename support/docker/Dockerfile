@@ -1,12 +1,12 @@
 FROM golang AS build-env
 
-COPY . /go/src/app
-WORKDIR /go/src/app
+COPY . /go/src/github.com/sapk/docker-volume-gluster
+WORKDIR /go/src/github.com/sapk/docker-volume-gluster
 
 RUN make build
 
 FROM ubuntu
-MAINTAINER Antoine GIRARD <antoine.girard@sapk.fr>
+LABEL maintainer="Antoine GIRARD <antoine.girard@sapk.fr>"
 
 RUN apt-get update \
  && apt-get install -y glusterfs-client \
@@ -14,7 +14,7 @@ RUN apt-get update \
  && apt-get autoclean -y && apt-get clean -y \
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build-env /go/src/app/docker-volume-gluster /usr/bin/docker-volume-gluster
+COPY --from=build-env /go/src/github.com/sapk/docker-volume-gluster/docker-volume-gluster /usr/bin/docker-volume-gluster
 
 RUN /usr/bin/docker-volume-gluster version
 
